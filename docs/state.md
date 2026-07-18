@@ -1,7 +1,7 @@
 # docs/state.md — UnderWrite
 
 - **Branch**: `main`（全PR マージ済、clean）
-- **Active Task**: T17（フロントエンド品質最終仕上げ）— 完了後に本セッション終了予定
+- **Active Task**: なし — T17 完了、商業ローンチ可能状態。セッション終了可
 - **Executor**: main agent (Sonnet 4.6)
 - **Write Lock**: なし
 - **Vercel**: project `under-write`（prj_pX2FfMIMvmxpN1NsjHVjNicMf3M0）、本番=main 自動デプロイ、env設定済
@@ -29,6 +29,7 @@
 | T14 | 写真解析ジョブキュー化（next/server after()） | #15 |
 | T15 | テストスイート60件 + ポーリングタイムアウト + 写真サイズ上限 | #16 |
 | T16 | 商業ハードニング（IDOR修正・サーバ側ガード・エンジン境界値・MIME伝播・失敗リトライUX）＋Opus Tier2レビュー修正 | #17 |
+| T17 | フロント最終仕上げ（解析進捗表示・クライアント画像圧縮・再試行導線・型統一）＋Sonnet Tier1レビュー修正 | #18 |
 
 ## Milestone 達成状況
 
@@ -36,6 +37,7 @@
 - **Milestone 2**: ✅ PDF帳票 / PWA / マルチユーザー / ジョブキュー化
 - **Milestone 3**: ✅ テストスイート60件 / UX改善（タイムアウト・サイズ上限）
 - **Milestone 4**: ✅ 商業ハードニング（テナント分離 / サーバ側ガード / エンジン境界値。テスト78件）
+- **Milestone 5**: ✅ フロント最終仕上げ（進捗表示 / 画像圧縮 / 再試行UX）— 商業ローンチ可能状態
 
 ## 既知の残課題（次フェーズ候補）
 

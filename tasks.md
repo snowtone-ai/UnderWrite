@@ -29,6 +29,7 @@
 | T14 | verified | main | T13 | app/api/scans/[scanId]/photos/route.ts, lib/ai/analyze-photo.ts | 写真解析ジョブキュー化: after()でレスポンス後にGemini呼び出し、Vercelタイムアウトリスク解消 | pnpm verify ALL PASSED | PR#15 merged main |
 | T15 | verified | main | T14 | vitest.setup.ts, vitest.config.ts, proxy.test.ts, app/api/scans/route.test.ts, app/api/scans/[scanId]/photos/route.test.ts, lib/ai/analyze-photo.test.ts, app/api/admin/users/route.test.ts, app/api/admin/users/[userId]/route.test.ts, app/result/[scanId]/page.tsx, components/scan-flow.tsx | テストスイート60件(11ファイル): auth middleware/scans/photos/analyze-photo/admin全API。ポーリング5分タイムアウト。写真10MBサイズ上限 | pnpm verify ALL PASSED (60 tests) | PR#16 merged main |
 | T16 | verified | main | T15 | app/api/scans/**, lib/ai/**, lib/underwriting/engine*, components/scan-flow.tsx, app/result/[scanId]/page.tsx, app/scans/page.tsx | 商業ハードニング: IDOR修正(photos/status所有権チェック), scan作成認証必須, サーバ側ガード(10MB/MIME/slot注入/20枚), エンジン cap=0→nogo＋NaNガード(ENGINE 1.1.0), AIProvider MIME伝播, 失敗リトライUX, 写真統計表示 | pnpm verify ALL PASSED (78 tests) | PR#17 squash-merged main (83460e0) |
+| T17 | verified | main | T16 | app/result/[scanId]/page.tsx, app/api/scans/[scanId]/status/*, components/scan-flow.tsx, components/range-bar.tsx, components/verdict-badge.tsx, lib/domain/*, app/login/page.tsx | フロント最終仕上げ: 解析進捗表示(pending応答にphotos{total,processed}), クライアント画像圧縮(長辺2048px/JPEG q0.85), 結果ページ再試行導線, UI型をlib/domainへ統一, login autofocus | pnpm verify ALL PASSED (78 tests) | PR#18 squash-merged main (8627ed7) |
 
 ## Blockers
 
@@ -44,3 +45,4 @@
 | T01 | fresh Sonnet subagent | Tier 1 (DB schema含; budget上 Opus不使用) | conditional-pass→対応済 | M-01(updated_atトリガ), M-02(bucket作成), m-08(B-01化), m-01(Next16表記), n-04(env JSDoc) を修正。残findingは T02-06 で対応 |
 | T-UI | fresh Sonnet subagent | Tier 1 (UI, 400+行) | FAIL→全指摘対応→自己確認でPASS | B-1(safe-area),B-2(cond contrast),M-1(年),M-2(clamp),M-3(精度文言),M-5(disclaimer contrast),m-1(tap44),m-2(aria),m-5(Noto),m-9(income符号) 修正。verify緑で再確認（Opus不使用のため full再レビューは代替） |
 | T16 | fresh Opus subagent | Tier 2 (auth/security/500+行) | PASS＋1件修正適用 | [中]storage孤児blob(insert失敗時cleanup欠如)を発見→5f88115で修正＋回帰テスト。engine二重実行レースは冪等upsertのため見送り記録。報告書 .opus_review_report.md |
+| T17 | fresh Sonnet subagent | Tier 1 (critical workflow: scan-flow) | PASS＋1件修正適用 | [中]prepareUploadでctx null時にbitmap.close()漏れ(メモリリーク)→dc6477aで修正。ポーリング再試行/型互換/後方互換は問題なしと確認 |
