@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Camera, Check, MapPin, WifiOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/logo";
 
 type Shot = { id: string; label: string; hint: string; core?: boolean };
 
@@ -42,6 +44,9 @@ export function ScanFlow() {
 
   return (
     <main className="mx-auto max-w-[560px] px-4 pb-28 pt-5">
+      <Link href="/" className="mb-6 inline-flex">
+        <Logo />
+      </Link>
       <h1 className="text-[22px] font-bold">新しい査定</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         現地で15分。住所と気になる箇所の写真だけで大丈夫です。

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, ScanLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/logo";
 
 const STEPS = [
   { n: "01", label: "スキャン", body: "住所を取得し、気になる箇所を数枚撮影する（15分）。" },
@@ -12,10 +13,8 @@ const STEPS = [
 export default function Home() {
   return (
     <main className="mx-auto max-w-[560px] px-5 py-14">
-      <p className="text-[13px] font-medium tracking-wide text-primary">
-        UnderWrite（アンダーライト）
-      </p>
-      <h1 className="mt-3 text-[34px] font-bold leading-tight tracking-tight">
+      <Logo />
+      <h1 className="mt-8 text-[34px] font-bold leading-tight tracking-tight">
         開けなくても、わかる。
       </h1>
       <p className="mt-4 text-[15px] leading-relaxed text-muted-foreground">

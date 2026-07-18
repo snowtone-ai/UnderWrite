@@ -7,6 +7,7 @@ import { VerdictBadge, verdictRule } from "@/components/verdict-badge";
 import { RangeBar } from "@/components/range-bar";
 import { RiskItem } from "@/components/risk-item";
 import { Button } from "@/components/ui/button";
+import { LogoMark } from "@/components/logo";
 import { SAMPLE_UNDERWRITING as u } from "@/lib/sample/underwriting";
 
 export default function ResultPage() {
@@ -25,8 +26,9 @@ export default function ResultPage() {
         <div className="min-w-0">
           <Link
             href="/"
-            className="mb-1 inline-flex items-center gap-1 text-xs text-muted-foreground"
+            className="mb-1 inline-flex items-center gap-1.5 text-xs text-muted-foreground"
           >
+            <LogoMark className="size-4" />
             <ArrowLeft className="size-3.5" aria-hidden /> 物件一覧
           </Link>
           <h1 className="truncate text-[17px] font-medium">{u.property.address}</h1>
