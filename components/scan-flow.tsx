@@ -24,6 +24,38 @@ const SHOTS: Shot[] = [
 const CORE_REQUIRED = 4;
 const HIGH_PRECISION = SHOTS.length;
 const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB per photo
+const MAX_DIMENSION = 2048; // longest edge after client-side compression
+const COMPRESS_THRESHOLD_BYTES = 1.5 * 1024 * 1024; // skip re-encode below this
+
+// Downscale + re-encode to JPEG before upload so field uploads over mobile
+// networks stay fast. Falls back to the original file if the browser cannot
+// decode it (e.g. HEIC on non-Safari) — the server validates type/size again.
+async function prepareUpload(file: File): Promise<File> {
+  const alreadySmall =
+    file.size <= COMPRESS_THRESHOLD_BYTES && (file.type === "image/jpeg" || file.type === "image/webp");
+  if (alreadySmall) return file;
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, MAX_DIMENSION / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      bitmap.close();
+      return file;
+    }
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close();
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, "image/jpeg", 0.85),
+    );
+    if (!blob || blob.size >= file.size) return file;
+    return new File([blob], "photo.jpg", { type: "image/jpeg" });
+  } catch {
+    return file;
+  }
+}
 
 function precision(count: number): { level: string; next: string | null } {
   if (count < CORE_REQUIRED)
@@ -113,9 +145,10 @@ export function ScanFlow() {
         const label = SHOTS.find((s) => s.id === slot)?.label ?? slot;
         setUploadState({ current: label, done, total });
 
+        const upload = await prepareUpload(file);
         const fd = new FormData();
         fd.append("slot", slot);
-        fd.append("image", file);
+        fd.append("image", upload);
 
         try {
           const photoRes = await fetch(`/api/scans/${scanId}/photos`, {
