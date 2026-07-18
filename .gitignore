@@ -34,3 +34,5 @@ Thumbs.db
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# PWA (sw.js is committed — do not add to gitignore)

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
+import { PwaRegister } from "@/components/pwa-register";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -42,7 +43,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja" className={`${inter.variable} ${notoSansJp.variable}`}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <PwaRegister />
+      </body>
     </html>
   );
 }
