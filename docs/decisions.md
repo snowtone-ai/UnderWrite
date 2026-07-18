@@ -7,8 +7,11 @@ Permanent rationale. Newest first.
   bypassPermissions＋guard hook、Sonnet-first ルーティング、Fable 5 はアドバイザー専用。
 - **理由**: 非エンジニアが Claude Pro（$20/月・上限固定）で1体の自律エージェントを運用する前提に最適化されているため。
 
-## D-002 — 技術スタック: Next.js 15 (App Router) + TypeScript / Vercel / Supabase
-- **決定**: フロント＋APIを Next.js 15 App Router + TS、Vercel 無料枠にデプロイ。DB/Storage/Auth は Supabase 無料枠。
+## D-002 — 技術スタック: Next.js 16 (App Router) + TypeScript / Vercel / Supabase
+- **決定**: フロント＋APIを Next.js 16 App Router + TS、Vercel 無料枠にデプロイ。DB/Storage は Supabase 無料枠。
+  （当初 Next.js 15 想定だったが pnpm 解決の最新メジャーが 16。App Router 前提は不変のため 16 を採用）
+- **依存ピン**: TypeScript は 5.x、ESLint は 9.x に固定（最新の TS7 / ESLint10 は lint ツール未対応。docs/issues.md R-001/R-002）。
+- **updated_at 契約**: `scans.updated_at` は DB トリガ `set_updated_at()` で自動更新（アプリ側でセット不要）。
 - **理由**: $0 制約（Claude Pro 以外は 0）。両者とも寛大な無料枠と MCP 連携があり、solo 自律開発の摩擦が最小。
 - **代替案**: 独自バックエンド＋自前ホスティング → 運用コスト・複雑性が増し simplicity 原則に反するため却下。
 
