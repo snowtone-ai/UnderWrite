@@ -49,3 +49,25 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ scanId: data.id }, { status: 201 });
 }
+
+export async function GET() {
+  const user = await getSessionUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const db = getServiceClient();
+  const { data, error } = await db
+    .from("scans")
+    .select("id, address, build_year, structure, floor_area_sqm, status, created_at")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(50);
+
+  if (error) {
+    console.error("scans fetch error", error);
+    return NextResponse.json({ error: "DB error" }, { status: 500 });
+  }
+
+  return NextResponse.json({ scans: data ?? [] });
+}
