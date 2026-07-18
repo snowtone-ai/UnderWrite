@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase/server";
-import { getAIProvider } from "@/lib/ai";
-import { SCHEMA_VERSION } from "@/lib/domain";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -21,25 +19,23 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ sca
   }
 
   const arrayBuffer = await file.arrayBuffer();
-  const base64 = Buffer.from(arrayBuffer).toString("base64");
-
-  const aiProvider = await getAIProvider();
-  const [providerName, modelId] = aiProvider.modelId.split("/");
-
-  let findings;
-  try {
-    findings = await aiProvider.analyzeImages([base64], `スロット: ${slot}`);
-  } catch (err) {
-    console.error("analyzeImages error", err);
-    return NextResponse.json({ error: "AI analysis failed" }, { status: 502 });
-  }
+  const contentType = file.type || "image/jpeg";
+  const storagePath = `${scanId}/${slot}-${Date.now()}.jpg`;
 
   const db = getServiceClient();
 
-  const photoFilename = `${scanId}/${slot}-${Date.now()}.jpg`;
+  const { error: uploadErr } = await db.storage
+    .from("property-photos")
+    .upload(storagePath, arrayBuffer, { contentType, upsert: false });
+
+  if (uploadErr) {
+    console.error("storage upload error", uploadErr);
+    return NextResponse.json({ error: "Storage upload failed" }, { status: 500 });
+  }
+
   const { data: photoRow, error: photoErr } = await db
     .from("photos")
-    .insert({ scan_id: scanId, storage_path: photoFilename, slot, status: "done" })
+    .insert({ scan_id: scanId, storage_path: storagePath, slot, status: "pending" })
     .select("id")
     .single();
 
@@ -48,22 +44,5 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ sca
     return NextResponse.json({ error: "DB error saving photo" }, { status: 500 });
   }
 
-  if (findings.length > 0) {
-    const rows = findings.map((f) => ({
-      scan_id: scanId,
-      photo_id: photoRow.id,
-      schema_version: SCHEMA_VERSION,
-      provider: providerName,
-      model_id: modelId,
-      raw_output: f,
-      parsed: f,
-    }));
-
-    const { error: findingErr } = await db.from("findings").insert(rows);
-    if (findingErr) {
-      console.error("findings insert error", findingErr);
-    }
-  }
-
-  return NextResponse.json({ photoId: photoRow.id, findingCount: findings.length }, { status: 201 });
+  return NextResponse.json({ photoId: photoRow.id }, { status: 201 });
 }

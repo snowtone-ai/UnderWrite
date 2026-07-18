@@ -33,6 +33,8 @@ export interface EngineInput {
   findings: FindingV1[];
   resaleBaseline: ResaleBaseline;
   providerModelId: string;
+  currentYear?: number;
+  now?: string;
 }
 
 function lognormalPercentile(median: number, sigma: number, z: number): number {
@@ -76,7 +78,7 @@ function toRiskSummary(f: FindingV1): RiskSummary {
 
 export function runEngine(engineInput: EngineInput): UnderwritingV1 {
   const { input, findings, resaleBaseline, providerModelId } = engineInput;
-  const currentYear = new Date().getFullYear();
+  const currentYear = engineInput.currentYear ?? new Date().getFullYear();
   const age = currentYear - input.buildYear;
 
   // Age coefficient: increases renovation cost with age (capped at 1.6×)
@@ -160,7 +162,7 @@ export function runEngine(engineInput: EngineInput): UnderwritingV1 {
     comps: resaleBaseline.comps,
     photoCoverage: { taken: photoCount, recommended: 7 },
     findings,
-    assessedAt: new Date().toISOString(),
+    assessedAt: engineInput.now ?? new Date().toISOString(),
   };
 }
 

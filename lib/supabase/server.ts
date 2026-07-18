@@ -1,11 +1,9 @@
 import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 import { requireEnv } from "@/lib/env";
 
-// Server-side Supabase client using the service-role key.
-// Per docs/decisions.md, all table access is server-side and RLS has no public policies,
-// so this client (which bypasses RLS) is the single gateway to the database.
-// Never import this from client components.
 let cached: SupabaseClient | null = null;
 
 export function getServiceClient(): SupabaseClient {
@@ -16,4 +14,23 @@ export function getServiceClient(): SupabaseClient {
     { auth: { persistSession: false, autoRefreshToken: false } },
   );
   return cached;
+}
+
+export async function getSessionUser() {
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    requireEnv("NEXT_PUBLIC_SUPABASE_URL"),
+    requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
+    {
+      cookies: {
+        getAll: () => cookieStore.getAll(),
+        setAll: (toSet) =>
+          toSet.forEach(({ name, value, options }) =>
+            cookieStore.set(name, value, options),
+          ),
+      },
+    },
+  );
+  const { data: { user } } = await supabase.auth.getUser();
+  return user;
 }

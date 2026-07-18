@@ -28,10 +28,10 @@ function makeFinding(overrides: Partial<FindingV1> = {}): FindingV1 {
 
 describe("runEngine — determinism", () => {
   it("returns identical result for identical input", () => {
-    const a = runEngine({ input: BASE_INPUT, findings: [], resaleBaseline: RESALE, providerModelId: "gemini/test" });
-    const b = runEngine({ input: BASE_INPUT, findings: [], resaleBaseline: RESALE, providerModelId: "gemini/test" });
-    // assessedAt is time-based; compare everything else
-    expect({ ...a, assessedAt: "" }).toEqual({ ...b, assessedAt: "" });
+    const opts = { input: BASE_INPUT, findings: [], resaleBaseline: RESALE, providerModelId: "gemini/test", currentYear: 2024, now: "2024-01-01T00:00:00.000Z" };
+    const a = runEngine(opts);
+    const b = runEngine(opts);
+    expect(a).toEqual(b);
   });
 });
 

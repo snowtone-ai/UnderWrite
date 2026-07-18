@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getServiceClient } from "@/lib/supabase/server";
+import { getServiceClient, getSessionUser } from "@/lib/supabase/server";
 import { STRUCTURES } from "@/lib/domain";
 
 const CreateScanBody = z.object({
@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
 
   const { address, buildYear, structure, floorAreaSqm, landAreaSqm } = parsed.data;
 
+  const user = await getSessionUser();
   const db = getServiceClient();
   const { data, error } = await db
     .from("scans")
@@ -36,6 +37,7 @@ export async function POST(req: NextRequest) {
       floor_area_sqm: floorAreaSqm,
       land_area_sqm: landAreaSqm ?? null,
       status: "pending",
+      user_id: user?.id ?? null,
     })
     .select("id")
     .single();
