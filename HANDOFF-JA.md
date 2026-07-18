@@ -1,33 +1,38 @@
 # HANDOFF-JA.md — UnderWrite 引き継ぎ
 
-## 今回セッションの成果（開発環境構築 / T00）
-pm-zero v11 に完全準拠した本番プロダクト開発環境を UnderWrite リポジトリに構築した。
+## 現在の到達点（完了・本番稼働中）
+- **T00**: pm-zero v11 開発環境（13ファイル基盤、CLAUDE.md、guard/settings）構築。
+- **T01**: Next.js 16 + TS + pnpm 雛形。Supabase 構築。Vercel 本番デプロイ（env設定済）。
+- **T-UI**: 世界水準デザインシステム（「紙の稟議書の誠実さ」／藍／Tailwind v4／Inter+Noto Sans JP）。
+  画面 = landing `/`、scan入力 `/scan`、判定ダッシュボード `/result`。ユースケース(佐藤社長)を mock で再現。
+- **アイコン**: ベクター「Gable + Median」。favicon(`app/icon.svg`) / iOS(`app/apple-icon.png`) /
+  ロゴ(`components/logo.tsx`) / PWA(`app/manifest.ts`)。
 
-- **リポジトリ**: git 初期化、`snowtone-ai/UnderWrite` remote 接続、作業ブランチ `chore/scaffold-pm-zero-v11`。
-- **pm-zero v11 台帳（13ファイル基盤）**:
-  - Core: `CLAUDE.md`, `.claude/settings.json`（bypassPermissions＋thin deny）, `HANDOFF-JA.md`
-  - Ledger: `docs/vision.md`, `tasks.md`, `docs/state.md`, `docs/decisions.md`, `docs/issues.md`
-  - Navigation: `docs/repo-map.md`
-  - Scripts: `scripts/setup.mjs`, `scripts/verify.mjs`
-  - Aux: `.env.example`, `.gitignore`, `README.md`
-- **アーキテクチャ確定（Fable 5 アドバイザー評を反映、decisions.md D-002〜D-007）**:
-  - スタック: Next.js 15 + TS / Vercel 無料枠 / Supabase 無料枠。$0（Claude Pro 以外）厳守。
-  - AI 差し替え可能: `lib/ai/` の `AIProvider`（2メソッド: `analyzeImages`, `generateText`）、
-    `AI_PROVIDER` env で選択。初期 = Gemini。
-  - 数学隔離: `lib/underwriting/` は純・決定論。LLM に載せない。
-  - AI 境界: `lib/domain/` の versioned `Finding` zod スキーマ。生出力＋解析結果＋version＋model id を永続。
-  - MVP 削減: PWA/認証/ネイティブRoomPlan/帳票 を除外。写真解析は最初から非同期（DB永続＋ポーリング）。
+## 稼働リソース
+- **GitHub**: snowtone-ai/UnderWrite（main 保護せず直接マージ運用、PRは squash）。
+- **Vercel**: project `under-write`（prj_pX2FfMIMvmxpN1NsjHVjNicMf3M0 / team_VbVoJAkv3fZhiEDT8BmksU9K）。
+  main push で本番自動デプロイ。本番URL: https://under-write-git-main-snowtone-ai-155227e5.vercel.app
+- **Supabase**: project `erpfxhrvrzmxawojziyc`（ap-northeast-1）。
+  tables: scans/photos/findings/underwritings（RLS on・公開ポリシー無＝service-role のみ）。
+  updated_at トリガ、private bucket `property-photos`。URL: https://erpfxhrvrzmxawojziyc.supabase.co
+- **AI**: Gemini（`AI_PROVIDER=gemini`）。差替は env のみ（コード不変）。
 
-## 検証
-- Phase 0 toolchain: node v24.14 / pnpm 10.33 / git 2.54 / gh 2.92（snowtone-ai 認証済）/ rtk 0.39 — OK。
-- **レビューティア**: Tier 0（scaffold のためコード検証は次タスク以降）。本セッションはドキュメント/設定中心。
+## 検証状態
+- `pnpm verify` = lint 0 / typecheck / test 4 / build（8 routes）全緑。
+- レビュー: T01・T-UI とも fresh-context Sonnet サブエージェントで実施し指摘対応済（Review Notes 参照）。
 
-## 次セッションの着手点（T01: scaffold + deploy）
-1. Next.js 15 + TS + pnpm 雛形を作成（`pnpm create next-app` 相当、App Router）。
-2. Supabase MCP で project 作成 → tables（scans, photos, findings, underwritings）→ Storage bucket。
-3. Vercel MCP で hello page を本番デプロイし 200 を確認。
-4. `.env.local` に Gemini / Supabase / 不動産情報ライブラリ の値を投入（ユーザー作業が要る場合はここで依頼）。
+## 次セッションの着手点
+1. **（ユーザー要望）Canva MCP**: セッション途中で Claude Desktop 側に Canva を接続済みの可能性。
+   新規MCPは再起動後に有効化されるため、**次セッション開始時に Canva が使えるか確認**。使えれば、
+   ユーザー希望に応じてアイコンを Canva でも制作/検討（現行は SVG 版が本番反映済。D-009 参照）。
+2. **T02**: `lib/domain` に zod スキーマ `Finding` / `ScanInput` / `Underwriting`（versioned）を定義。
+   現行 `/result` は `lib/sample/underwriting.ts` の mock 型を使用 → T02 完了時に lib/domain へ差し替え結線。
+3. 以降 T03（決定論エンジン）→ T04（不動産情報ライブラリ client）→ T05（lib/ai Gemini）→ T06（scan→Storage→非同期処理）→ T07（実データ結線・Milestone1）。
 
 ## 未確定・ユーザー確認が要る可能性
-- Supabase / Vercel / Gemini / 不動産情報ライブラリ の各アカウント・APIキー取得（無料枠）。
-  MCP でプロジェクト作成は自律実行可能だが、外部アカウント認証が要る場合は `! <command>` での実行を依頼する。
+- 不動産情報ライブラリ API キー（申請から5営業日）。届いたら `.env.local` / Vercel env に `REINFOLIB_API_KEY` 設定。
+- `SUPABASE_SERVICE_ROLE_KEY` は Vercel に設定済（ユーザー報告）。ローカル `.env.local` にも T06 実装時に要投入。
+
+## セッション終了チェック（このコミット時点）
+- git: main 相当までマージ・push 済、作業ツリー clean。
+- ledger（tasks/state/decisions/issues）と memory（MEMORY.md）は最新。

@@ -7,6 +7,13 @@ Permanent rationale. Newest first.
   bypassPermissions＋guard hook、Sonnet-first ルーティング、Fable 5 はアドバイザー専用。
 - **理由**: 非エンジニアが Claude Pro（$20/月・上限固定）で1体の自律エージェントを運用する前提に最適化されているため。
 
+## D-009 — ブランドアイコンはベクター(SVG)で作成（Canva MCP 未接続）
+- **決定**: アイコン「Gable + Median」（藍タイル＋切妻＋分布中央値ティック）を SVG で作成し、
+  favicon/apple-icon/UIロゴ/PWA に反映。sharp でラスタライズ確認。
+- **理由**: ユーザーは Canva MCP を希望したが本セッションに未接続。SVG は全解像度で破綻せず $0・Git管理・
+  ブランド色厳密一致で、この用途に最適（Linear/Vercel/Stripe と同様の方針）。
+- **次アクション**: ユーザーが Canva を接続した場合、次セッションで Canva 版の制作/比較を検討可能。
+
 ## D-008 — フロントエンド・デザインシステム（世界水準UI/UX）
 - **決定**: Tailwind CSS v4（`@theme inline`＋OKLCH自動light/dark）＋ shadcn/ui 準拠のコンポーネント層
   ＋ Radix（unified `radix-ui`）＋ motion（Framer後継）＋ lucide。フォントは Inter＋Noto Sans JP（next/font）。
