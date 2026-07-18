@@ -26,9 +26,14 @@ export default function ResultPage() {
 
   useEffect(() => {
     let cancelled = false;
+    const deadline = Date.now() + 5 * 60 * 1000; // 5-minute timeout
 
     async function poll() {
       while (!cancelled) {
+        if (Date.now() > deadline) {
+          setErrorMsg("解析がタイムアウトしました。写真の解析に時間がかかっています。しばらく後に査定一覧から確認してください。");
+          return;
+        }
         try {
           const res = await fetch(`/api/scans/${scanId}/status`);
           if (!res.ok) {
@@ -63,9 +68,14 @@ export default function ResultPage() {
     return (
       <main className="mx-auto max-w-[560px] px-4 pt-10 text-center">
         <p className="text-destructive">{errorMsg}</p>
-        <Link href="/scan" className="mt-4 inline-block text-sm text-primary">
-          やり直す
-        </Link>
+        <div className="mt-4 flex flex-col items-center gap-2">
+          <Link href="/scans" className="text-sm text-primary">
+            査定一覧へ
+          </Link>
+          <Link href="/scan" className="text-sm text-muted-foreground">
+            新しい査定を始める
+          </Link>
+        </div>
       </main>
     );
   }
