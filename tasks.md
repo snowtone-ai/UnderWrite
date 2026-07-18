@@ -20,7 +20,8 @@
 | T05 | ready | main | T02 | lib/ai/ | `AIProvider` interface＋Gemini実装（structured output→`Finding[]`）。AI_PROVIDER 選択。境界で zod 検証＋生出力永続 | provider契約 test（スキーマ非適合で reject/retry） | — |
 | T06 | ready | main | T01,T05 | app/(scan)/, app/api/ | 住所＋写真アップロードpage→Storage→写真1枚ずつ処理route（DB status追跡＋ポーリング） | ローカルで1件アップ→findings生成をE2E確認 | — |
 | T07 | ready | main | T03,T04,T05,T06 | app/(result)/ | 結果ダッシュボード。T06→T05→T04→T03 を結線。実在物件1件で検証 ← **Milestone 1 ゲート** | final verify＋実物件sanity check＋Tier1レビュー | — |
-| T08 | proposed | main | T07 | 全域 | ハードニング: 認証, エラー/リトライUI, replay項目レビュー, vision/README 更新 | final verify＋Tier1（認証はTier2） | — |
+| T08 | verified | main | T07 | lib/supabase/, lib/underwriting/engine.ts, proxy.ts, app/login/, app/api/auth/, app/api/scans/[scanId]/ | 認証ゲート(proxy.ts), loginページ, logoutルート, エンジン純粋化(currentYear/now inject), 写真Storage実アップロード | verify緑＋PR#8マージ済 | PR#8 merged main |
+| T09 | doing | main | T08 | app/scans/, app/api/scans/route.ts, app/api/scans/[scanId]/photos/, app/api/scans/[scanId]/status/, proxy.ts | 査定履歴ページ(GET /api/scans), per-photo同期Gemini(タイムアウト対策), /scans認証保護 | pnpm verify ALL PASSED | — |
 
 ## Blockers
 

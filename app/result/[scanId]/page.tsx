@@ -92,7 +92,7 @@ export default function ResultPage() {
       <header className="mb-4 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <Link
-            href="/"
+            href="/scans"
             className="mb-1 inline-flex items-center gap-1.5 text-xs text-muted-foreground"
           >
             <LogoMark className="size-4" />
