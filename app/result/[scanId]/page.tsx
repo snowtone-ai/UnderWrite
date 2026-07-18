@@ -1,5 +1,9 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ChevronDown, Share2 } from "lucide-react";
+import { ArrowLeft, ChevronDown, Loader2, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatMan } from "@/lib/format";
 import { Money } from "@/components/money";
@@ -8,21 +12,83 @@ import { RangeBar } from "@/components/range-bar";
 import { RiskItem } from "@/components/risk-item";
 import { Button } from "@/components/ui/button";
 import { LogoMark } from "@/components/logo";
-import { SAMPLE_UNDERWRITING as u } from "@/lib/sample/underwriting";
-import type { RiskSummary } from "@/lib/domain";
+import type { UnderwritingV1 } from "@/lib/domain";
+
+type StatusResponse =
+  | { status: "done"; result: UnderwritingV1 }
+  | { status: "pending" }
+  | { error: string };
 
 export default function ResultPage() {
-  const assessed = new Date(u.property.assessedAt).toLocaleString("ja-JP", {
+  const { scanId } = useParams<{ scanId: string }>();
+  const [result, setResult] = useState<UnderwritingV1 | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function poll() {
+      while (!cancelled) {
+        try {
+          const res = await fetch(`/api/scans/${scanId}/status`);
+          if (!res.ok) {
+            setErrorMsg("判定結果の取得に失敗しました");
+            return;
+          }
+          const data = (await res.json()) as StatusResponse;
+          if ("error" in data) {
+            setErrorMsg(data.error);
+            return;
+          }
+          if (data.status === "done") {
+            setResult(data.result);
+            return;
+          }
+          // pending — retry after 2s
+          await new Promise((r) => setTimeout(r, 2000));
+        } catch {
+          setErrorMsg("ネットワークエラーが発生しました");
+          return;
+        }
+      }
+    }
+
+    poll();
+    return () => {
+      cancelled = true;
+    };
+  }, [scanId]);
+
+  if (errorMsg) {
+    return (
+      <main className="mx-auto max-w-[560px] px-4 pt-10 text-center">
+        <p className="text-destructive">{errorMsg}</p>
+        <Link href="/scan" className="mt-4 inline-block text-sm text-primary">
+          やり直す
+        </Link>
+      </main>
+    );
+  }
+
+  if (!result) {
+    return (
+      <main className="mx-auto flex max-w-[560px] flex-col items-center justify-center gap-4 px-4 pt-24">
+        <Loader2 className="size-10 animate-spin text-primary" />
+        <p className="text-sm text-muted-foreground">AIが写真を解析中です。しばらくお待ちください…</p>
+      </main>
+    );
+  }
+
+  const u = result;
+  const assessed = new Date(u.assessedAt).toLocaleString("ja-JP", {
     month: "numeric",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
   });
-  const age = new Date().getFullYear() - u.property.buildYear;
 
   return (
     <main className="mx-auto max-w-[560px] px-4 pb-28 pt-5">
-      {/* Header */}
       <header className="mb-4 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <Link
@@ -32,18 +98,15 @@ export default function ResultPage() {
             <LogoMark className="size-4" />
             <ArrowLeft className="size-3.5" aria-hidden /> 物件一覧
           </Link>
-          <h1 className="truncate text-[17px] font-medium">{u.property.address}</h1>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            {u.property.structure}・{u.property.buildYear}年築（築{age}年）・
-            延床{u.property.floorAreaSqm}㎡ ／ {assessed} 判定
-          </p>
+          <h1 className="truncate text-[17px] font-medium">査定結果</h1>
+          <p className="mt-0.5 text-xs text-muted-foreground">{assessed} 判定</p>
         </div>
-        <button
-          type="button"
+        <Link
+          href="/scan"
           className="-mr-2 shrink-0 rounded-md px-2 py-2 text-xs font-medium text-primary"
         >
-          再計算
-        </button>
+          新しい査定
+        </Link>
       </header>
 
       {/* Verdict hero */}
@@ -78,10 +141,7 @@ export default function ResultPage() {
             {u.ledger.map((line) => {
               const isTotal = line.kind === "total";
               return (
-                <tr
-                  key={line.label}
-                  className={cn(isTotal && "border-t border-border-strong")}
-                >
+                <tr key={line.label} className={cn(isTotal && "border-t border-border-strong")}>
                   <th
                     scope="row"
                     className={cn(
@@ -112,18 +172,20 @@ export default function ResultPage() {
       </section>
 
       {/* Risks */}
-      <section className="mt-4 rounded-xl border border-border bg-card p-5">
-        <p className="mb-2 text-sm font-medium text-muted-foreground">
-          リスク警告（影響額の大きい順）
-        </p>
-        <div>
-          {u.risks.map((risk) => (
-            <RiskItem key={risk.id} risk={risk as RiskSummary} />
-          ))}
-        </div>
-      </section>
+      {u.risks.length > 0 && (
+        <section className="mt-4 rounded-xl border border-border bg-card p-5">
+          <p className="mb-2 text-sm font-medium text-muted-foreground">
+            リスク警告（影響額の大きい順）
+          </p>
+          <div>
+            {u.risks.map((risk) => (
+              <RiskItem key={risk.id} risk={risk} />
+            ))}
+          </div>
+        </section>
+      )}
 
-      {/* Evidence (collapsed by default) */}
+      {/* Evidence */}
       <details className="group mt-4 rounded-xl border border-border bg-card p-5">
         <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-medium">
           この判定の根拠
@@ -139,10 +201,12 @@ export default function ResultPage() {
           </p>
           <p>
             現在の判定精度は「<span className="font-medium text-foreground">{u.confidence}</span>」です。
-            <span className="text-primary">床下の写真</span>を追加すると精度が上がります。
           </p>
           <p>
             ※ 本結果は確率分布に基づく参考値です。最終的な買付判断は事業者ご自身で行ってください。
+          </p>
+          <p className="text-[11px]">
+            エンジン: {u.engineVersion} / モデル: {u.providerModelId}
           </p>
         </div>
       </details>
