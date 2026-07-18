@@ -8,6 +8,7 @@ import { RangeBar } from "@/components/range-bar";
 import { RiskItem } from "@/components/risk-item";
 import { Button } from "@/components/ui/button";
 import { LogoMark } from "@/components/logo";
+import { PrintButton } from "@/components/print-button";
 import { SAMPLE_UNDERWRITING as u } from "@/lib/sample/underwriting";
 import type { RiskSummary } from "@/lib/domain";
 
@@ -148,7 +149,7 @@ export default function ResultPage() {
       </details>
 
       {/* Sticky action bar */}
-      <div className="fixed inset-x-0 bottom-0 border-t border-border bg-background/90 backdrop-blur">
+      <div className="print-hide fixed inset-x-0 bottom-0 border-t border-border bg-background/90 backdrop-blur">
         <div
           className="mx-auto flex max-w-[560px] items-center justify-between gap-3 px-4 py-3"
           style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
@@ -157,11 +158,14 @@ export default function ResultPage() {
             <VerdictBadge verdict={u.verdict} />
             <Money yen={u.purchaseCapYen} className="text-base font-bold" />
           </div>
-          <Button asChild className="gap-1.5">
-            <Link href="/scan">
-              <Plus className="size-4" aria-hidden /> 新しい査定
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <PrintButton />
+            <Button asChild className="gap-1.5">
+              <Link href="/scan">
+                <Plus className="size-4" aria-hidden /> 新しい査定
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
     </main>

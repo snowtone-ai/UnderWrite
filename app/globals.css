@@ -98,3 +98,34 @@
     font-feature-settings: "tnum";
   }
 }
+
+@media print {
+  /* Suppress browser chrome and interactive elements */
+  .print-hide {
+    display: none !important;
+  }
+  /* Ensure print-visible sections always break correctly */
+  .print-break-before {
+    break-before: page;
+  }
+  /* Remove sticky footer and nav chrome */
+  body {
+    background: #ffffff !important;
+    color: #1b1b18 !important;
+  }
+  /* Force all card borders to render in print */
+  [class*="border"] {
+    border-color: #e3e3dd !important;
+  }
+  /* Expand collapsed details sections */
+  details {
+    display: block !important;
+  }
+  details summary::marker,
+  details summary::-webkit-details-marker {
+    display: none;
+  }
+  details > *:not(summary) {
+    display: block !important;
+  }
+}
