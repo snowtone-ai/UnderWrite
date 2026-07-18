@@ -19,7 +19,8 @@ export function RangeBar({
   className?: string;
 }) {
   const span = Math.max(range.p90 - range.p10, 1);
-  const medianPct = ((range.p50 - range.p10) / span) * 100;
+  // Clamp so a skewed distribution (p50 outside [p10,p90]) never overflows the bar.
+  const medianPct = Math.min(100, Math.max(0, ((range.p50 - range.p10) / span) * 100));
 
   return (
     <div className={cn("space-y-3", className)}>

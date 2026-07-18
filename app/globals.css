@@ -19,7 +19,7 @@
   --primary-foreground: #ffffff;
   --go: #1a7a3e;
   --go-bg: #ebf5ee;
-  --cond: #9a6700;
+  --cond: #8a5c00; /* darkened for WCAG AA (>=4.5:1) on --cond-bg at text-xs */
   --cond-bg: #fbf3e0;
   --nogo: #b42318;
   --nogo-bg: #fbedeb;

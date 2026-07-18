@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Camera, Check, MapPin, WifiOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -18,22 +18,27 @@ const SHOTS: Shot[] = [
   { id: "floor", label: "床・床下", hint: "傾き・きしみが気になる所" },
 ];
 
+const CORE_REQUIRED = 4;
+const HIGH_PRECISION = SHOTS.length;
+
 function precision(count: number): { level: string; next: string | null } {
-  if (count < 4) return { level: "低", next: "基本の4枚で「標準」になります" };
-  if (count < 7) return { level: "標準", next: "屋根の写真で「高」になります" };
+  if (count < CORE_REQUIRED)
+    return { level: "低", next: `あと${CORE_REQUIRED - count}枚で「標準」になります` };
+  if (count < HIGH_PRECISION)
+    return { level: "標準", next: `あと${HIGH_PRECISION - count}枚で「高」になります` };
   return { level: "高", next: null };
 }
 
 export function ScanFlow() {
-  const [address, setAddress] = useState("");
+  const router = useRouter();
+  const [zip, setZip] = useState("");
   const [taken, setTaken] = useState<Set<string>>(new Set());
 
   const count = taken.size;
   const p = precision(count);
-  const canSubmit = count >= 4;
+  const canSubmit = count >= CORE_REQUIRED;
 
-  const capture = (id: string) =>
-    setTaken((prev) => new Set(prev).add(id));
+  const capture = (id: string) => setTaken((prev) => new Set(prev).add(id));
 
   return (
     <main className="mx-auto max-w-[560px] px-4 pb-28 pt-5">
@@ -46,7 +51,7 @@ export function ScanFlow() {
       <section className="mt-6 rounded-xl border border-border bg-card p-5">
         <p className="mb-3 text-sm font-medium text-muted-foreground">① 物件の住所</p>
         <Button size="lg" variant="outline" className="w-full justify-center gap-2">
-          <MapPin className="size-5 text-primary" /> 現在地から住所を取得
+          <MapPin className="size-5 text-primary" aria-hidden /> 現在地から住所を取得
         </Button>
         <div className="mt-3">
           <label htmlFor="zip" className="text-xs text-muted-foreground">
@@ -56,8 +61,8 @@ export function ScanFlow() {
             id="zip"
             inputMode="numeric"
             placeholder="例：320-0031"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
+            value={zip}
+            onChange={(e) => setZip(e.target.value)}
             className="mt-1 h-12 w-full rounded-md border border-border bg-background px-3 text-base outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40"
           />
         </div>
@@ -67,14 +72,14 @@ export function ScanFlow() {
       <section className="mt-4">
         <div className="mb-2 flex items-baseline justify-between">
           <p className="text-sm font-medium text-muted-foreground">② 写真を撮る</p>
-          <p className="text-xs text-muted-foreground">最低4枚から判定できます</p>
+          <p className="text-xs text-muted-foreground">最低{CORE_REQUIRED}枚から判定できます</p>
         </div>
 
         {/* Precision meter (not a quota) */}
         <div className="mb-3 rounded-xl border border-border bg-card px-4 py-3">
           <p className="text-sm">
             現在の判定精度：<span className="font-bold">{p.level}</span>
-            {p.next && <span className="text-muted-foreground"> — あと{p.next}</span>}
+            {p.next && <span className="text-muted-foreground"> — {p.next}</span>}
           </p>
           <div className="mt-2 flex gap-1">
             {SHOTS.map((s) => (
@@ -103,14 +108,16 @@ export function ScanFlow() {
                     done ? "bg-go-bg text-go" : "bg-muted text-muted-foreground",
                   )}
                 >
-                  {done ? <Check className="size-5" /> : <Camera className="size-5" />}
+                  {done ? (
+                    <Check className="size-5" aria-hidden />
+                  ) : (
+                    <Camera className="size-5" aria-hidden />
+                  )}
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="font-medium">
                     {s.label}
-                    {s.core && !done && (
-                      <span className="ml-2 text-xs text-primary">基本</span>
-                    )}
+                    {s.core && !done && <span className="ml-2 text-xs text-primary">基本</span>}
                   </p>
                   <p className="truncate text-xs text-muted-foreground">{s.hint}</p>
                 </div>
@@ -124,7 +131,7 @@ export function ScanFlow() {
                   />
                   <span
                     className={cn(
-                      "inline-flex h-9 cursor-pointer items-center rounded-md px-3 text-sm font-medium",
+                      "inline-flex h-11 cursor-pointer items-center rounded-md px-4 text-sm font-medium",
                       done
                         ? "text-muted-foreground"
                         : "bg-secondary text-secondary-foreground hover:bg-secondary/80",
@@ -139,24 +146,23 @@ export function ScanFlow() {
         </ul>
 
         <p className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
-          <WifiOff className="size-3.5" /> 圏外でも撮影を続けられます。電波が戻り次第、自動で送信します。
+          <WifiOff className="size-3.5" aria-hidden /> 圏外でも撮影を続けられます。電波が戻り次第、自動で送信します。
         </p>
       </section>
 
       {/* Submit */}
       <div className="fixed inset-x-0 bottom-0 border-t border-border bg-background/90 backdrop-blur">
-        <div className="mx-auto max-w-[560px] px-4 py-3">
+        <div
+          className="mx-auto max-w-[560px] px-4 py-3"
+          style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
+        >
           <Button
-            asChild={canSubmit}
             size="lg"
             disabled={!canSubmit}
+            onClick={() => router.push("/result")}
             className="w-full justify-center"
           >
-            {canSubmit ? (
-              <Link href="/result">査定を依頼する（{count}枚）</Link>
-            ) : (
-              <span>あと{4 - count}枚で査定できます</span>
-            )}
+            {canSubmit ? `査定を依頼する（${count}枚）` : `あと${CORE_REQUIRED - count}枚で査定できます`}
           </Button>
         </div>
       </div>

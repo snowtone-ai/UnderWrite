@@ -16,6 +16,7 @@ export default function ResultPage() {
     hour: "2-digit",
     minute: "2-digit",
   });
+  const age = new Date().getFullYear() - u.property.buildYear;
 
   return (
     <main className="mx-auto max-w-[560px] px-4 pb-28 pt-5">
@@ -26,15 +27,20 @@ export default function ResultPage() {
             href="/"
             className="mb-1 inline-flex items-center gap-1 text-xs text-muted-foreground"
           >
-            <ArrowLeft className="size-3.5" /> 物件一覧
+            <ArrowLeft className="size-3.5" aria-hidden /> 物件一覧
           </Link>
           <h1 className="truncate text-[17px] font-medium">{u.property.address}</h1>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            {u.property.structure}・{u.property.buildYear}年築（築{2026 - u.property.buildYear}年）・
+            {u.property.structure}・{u.property.buildYear}年築（築{age}年）・
             延床{u.property.floorAreaSqm}㎡ ／ {assessed} 判定
           </p>
         </div>
-        <button className="shrink-0 text-xs font-medium text-primary">再計算</button>
+        <button
+          type="button"
+          className="-mr-2 shrink-0 rounded-md px-2 py-2 text-xs font-medium text-primary"
+        >
+          再計算
+        </button>
       </header>
 
       {/* Verdict hero */}
@@ -88,7 +94,7 @@ export default function ResultPage() {
                       isTotal ? "pt-2.5 font-bold" : "text-foreground",
                     )}
                   >
-                    <Money yen={line.amountYen} signed={!isTotal} />
+                    <Money yen={line.amountYen} signed={line.kind === "cost"} />
                     {isTotal && (
                       <span className="ml-2 text-xs font-medium text-muted-foreground">
                         （{u.expectedMarginPct}%）
@@ -118,7 +124,10 @@ export default function ResultPage() {
       <details className="group mt-4 rounded-xl border border-border bg-card p-5">
         <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-medium">
           この判定の根拠
-          <ChevronDown className="size-4 text-muted-foreground transition-transform group-open:rotate-180" />
+          <ChevronDown
+            className="size-4 text-muted-foreground transition-transform group-open:rotate-180"
+            aria-hidden
+          />
         </summary>
         <div className="mt-4 space-y-3 text-[13px] leading-relaxed text-muted-foreground">
           <p>
@@ -129,7 +138,7 @@ export default function ResultPage() {
             現在の判定精度は「<span className="font-medium text-foreground">{u.confidence}</span>」です。
             <span className="text-primary">床下の写真</span>を追加すると精度が上がります。
           </p>
-          <p className="text-muted-foreground/80">
+          <p>
             ※ 本結果は確率分布に基づく参考値です。最終的な買付判断は事業者ご自身で行ってください。
           </p>
         </div>
@@ -137,13 +146,16 @@ export default function ResultPage() {
 
       {/* Sticky action bar */}
       <div className="fixed inset-x-0 bottom-0 border-t border-border bg-background/90 backdrop-blur">
-        <div className="mx-auto flex max-w-[560px] items-center justify-between gap-3 px-4 py-3">
+        <div
+          className="mx-auto flex max-w-[560px] items-center justify-between gap-3 px-4 py-3"
+          style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
+        >
           <div className="flex items-center gap-2">
             <VerdictBadge verdict={u.verdict} />
             <Money yen={u.purchaseCapYen} className="text-base font-bold" />
           </div>
           <Button className="gap-1.5">
-            <Share2 className="size-4" /> PDFで共有
+            <Share2 className="size-4" aria-hidden /> PDFで共有
           </Button>
         </div>
       </div>

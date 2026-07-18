@@ -26,12 +26,12 @@ export default function Home() {
       <div className="mt-7 flex flex-col gap-2 sm:flex-row">
         <Button asChild size="lg" className="justify-center gap-2">
           <Link href="/scan">
-            <ScanLine className="size-5" /> 査定をはじめる
+            <ScanLine className="size-5" aria-hidden /> 査定をはじめる
           </Link>
         </Button>
         <Button asChild size="lg" variant="outline" className="justify-center gap-2">
           <Link href="/result">
-            サンプル判定を見る <ArrowRight className="size-4" />
+            サンプル判定を見る <ArrowRight className="size-4" aria-hidden />
           </Link>
         </Button>
       </div>
