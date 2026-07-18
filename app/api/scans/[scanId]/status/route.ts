@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServiceClient } from "@/lib/supabase/server";
+import { getServiceClient, getSessionUser } from "@/lib/supabase/server";
 import { runEngine } from "@/lib/underwriting";
 import { fetchResaleBaseline } from "@/lib/data";
 import { getAIProvider } from "@/lib/ai";
@@ -17,7 +17,35 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ sca
     return NextResponse.json({ error: "Invalid scanId" }, { status: 400 });
   }
 
+  const user = await getSessionUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const db = getServiceClient();
+
+  // Ownership: the scan must exist and belong to the caller
+  const { data: scan, error: scanErr } = await db
+    .from("scans")
+    .select("id, user_id, address, build_year, structure, floor_area_sqm, land_area_sqm")
+    .eq("id", scanId)
+    .single();
+
+  if (scanErr || !scan || scan.user_id !== user.id) {
+    return NextResponse.json({ error: "Scan not found" }, { status: 404 });
+  }
+
+  // Photo progress (also reported alongside the final result)
+  const { data: photos } = await db
+    .from("photos")
+    .select("status")
+    .eq("scan_id", scanId);
+
+  const photoList = photos ?? [];
+  const photoStats = {
+    total: photoList.length,
+    failed: photoList.filter((p) => p.status === "failed").length,
+  };
 
   // Return cached underwriting if already computed
   const { data: existing } = await db
@@ -27,27 +55,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ sca
     .maybeSingle();
 
   if (existing?.result) {
-    return NextResponse.json({ status: "done", result: existing.result });
+    return NextResponse.json({ status: "done", result: existing.result, photos: photoStats });
   }
 
-  // Load scan metadata
-  const { data: scan, error: scanErr } = await db
-    .from("scans")
-    .select("id, address, build_year, structure, floor_area_sqm, land_area_sqm")
-    .eq("id", scanId)
-    .single();
-
-  if (scanErr || !scan) {
-    return NextResponse.json({ error: "Scan not found" }, { status: 404 });
-  }
-
-  // Check if any photos are still being processed
-  const { data: photos } = await db
-    .from("photos")
-    .select("status")
-    .eq("scan_id", scanId);
-
-  const photoList = photos ?? [];
   const stillProcessing = photoList.some((p) => p.status === "pending" || p.status === "analyzing");
   if (stillProcessing) {
     return NextResponse.json({ status: "pending" });
@@ -107,5 +117,5 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ sca
 
   await db.from("scans").update({ status: "done" }).eq("id", scanId);
 
-  return NextResponse.json({ status: "done", result });
+  return NextResponse.json({ status: "done", result, photos: photoStats });
 }

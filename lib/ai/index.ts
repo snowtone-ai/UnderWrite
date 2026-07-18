@@ -1,8 +1,13 @@
 import type { FindingV1 } from "@/lib/domain";
 import { getAiProvider } from "@/lib/env";
 
+export interface AIImage {
+  base64: string;
+  mimeType: string;
+}
+
 export interface AIProvider {
-  analyzeImages(imageBase64List: string[], instructions: string): Promise<FindingV1[]>;
+  analyzeImages(images: AIImage[], instructions: string): Promise<FindingV1[]>;
   generateText(prompt: string): Promise<string>;
   readonly modelId: string;
 }

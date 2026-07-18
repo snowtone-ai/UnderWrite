@@ -2,7 +2,13 @@ import { getServiceClient } from "@/lib/supabase/server";
 import { getAIProvider } from "@/lib/ai";
 import { SCHEMA_VERSION } from "@/lib/domain";
 
-export async function analyzePhoto(photoId: string, scanId: string, slot: string, base64: string) {
+export async function analyzePhoto(
+  photoId: string,
+  scanId: string,
+  slot: string,
+  base64: string,
+  mimeType: string = "image/jpeg",
+) {
   const db = getServiceClient();
   const aiProvider = await getAIProvider();
   const [providerName, modelId] = aiProvider.modelId.split("/");
@@ -10,7 +16,7 @@ export async function analyzePhoto(photoId: string, scanId: string, slot: string
   try {
     await db.from("photos").update({ status: "analyzing" }).eq("id", photoId);
 
-    const findings = await aiProvider.analyzeImages([base64], `スロット: ${slot}`);
+    const findings = await aiProvider.analyzeImages([{ base64, mimeType }], `スロット: ${slot}`);
 
     if (findings.length > 0) {
       const rows = findings.map((f) => ({

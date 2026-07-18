@@ -35,13 +35,17 @@ export default function ScansPage() {
   const router = useRouter();
   const [scans, setScans] = useState<ScanRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     fetch("/api/scans")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
       .then((d) => setScans(d.scans ?? []))
-      .catch(() => {})
+      .catch(() => setLoadError(true))
       .finally(() => setLoading(false));
 
     const supabase = createClient();
@@ -96,6 +100,16 @@ export default function ScansPage() {
 
       {loading ? (
         <div className="py-20 text-center text-sm text-muted-foreground">読み込み中…</div>
+      ) : loadError ? (
+        <div className="rounded-xl border border-border bg-card px-6 py-14 text-center">
+          <p className="text-sm text-destructive">査定一覧を取得できませんでした</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 inline-block text-sm font-medium text-primary"
+          >
+            再読み込み
+          </button>
+        </div>
       ) : scans.length === 0 ? (
         <div className="rounded-xl border border-border bg-card px-6 py-14 text-center">
           <p className="text-sm text-muted-foreground">査定履歴がありません</p>
