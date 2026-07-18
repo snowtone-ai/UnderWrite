@@ -60,7 +60,13 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ sca
 
   const stillProcessing = photoList.some((p) => p.status === "pending" || p.status === "analyzing");
   if (stillProcessing) {
-    return NextResponse.json({ status: "pending" });
+    const processed = photoList.filter(
+      (p) => p.status === "done" || p.status === "failed",
+    ).length;
+    return NextResponse.json({
+      status: "pending",
+      photos: { total: photoList.length, processed },
+    });
   }
 
   // All photos done/failed — run engine

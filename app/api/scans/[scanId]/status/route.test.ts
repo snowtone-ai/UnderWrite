@@ -122,13 +122,14 @@ describe("GET /api/scans/[scanId]/status", () => {
     expect(res.status).toBe(404);
   });
 
-  it("returns pending while photos are still processing", async () => {
+  it("returns pending with progress while photos are still processing", async () => {
     setupDb({ scan: OWNED_SCAN, photos: [{ status: "analyzing" }, { status: "done" }] });
 
     const res = await GET(makeReq(), { params: Promise.resolve({ scanId: VALID_SCAN_ID }) });
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.status).toBe("pending");
+    expect(body.photos).toEqual({ total: 2, processed: 1 });
   });
 
   it("returns cached result with photo stats", async () => {

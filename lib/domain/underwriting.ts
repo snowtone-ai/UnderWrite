@@ -46,6 +46,7 @@ export const UnderwritingV1 = z.object({
 });
 
 export type UnderwritingV1 = z.infer<typeof UnderwritingV1>;
+export type Verdict = UnderwritingV1["verdict"];
 export type MoneyRange = z.infer<typeof MoneyRange>;
 export type LedgerLine = z.infer<typeof LedgerLine>;
 export type RiskSummary = z.infer<typeof RiskSummary>;

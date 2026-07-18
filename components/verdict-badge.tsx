@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import type { Verdict } from "@/lib/sample/underwriting";
+import type { Verdict } from "@/lib/domain";
 
 const VERDICT: Record<Verdict, { label: string; className: string; rule: string }> = {
   go: {

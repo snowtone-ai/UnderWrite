@@ -15,17 +15,20 @@ import { LogoMark } from "@/components/logo";
 import type { UnderwritingV1 } from "@/lib/domain";
 
 type PhotoStats = { total: number; failed: number };
+type PendingStats = { total: number; processed: number };
 
 type StatusResponse =
   | { status: "done"; result: UnderwritingV1; photos?: PhotoStats }
-  | { status: "pending" }
+  | { status: "pending"; photos?: PendingStats }
   | { error: string };
 
 export default function ResultPage() {
   const { scanId } = useParams<{ scanId: string }>();
   const [result, setResult] = useState<UnderwritingV1 | null>(null);
   const [photoStats, setPhotoStats] = useState<PhotoStats | null>(null);
+  const [progress, setProgress] = useState<PendingStats | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -53,6 +56,7 @@ export default function ResultPage() {
             setPhotoStats(data.photos ?? null);
             return;
           }
+          if (data.photos) setProgress(data.photos);
           // pending — retry after 2s
           await new Promise((r) => setTimeout(r, 2000));
         } catch {
@@ -66,13 +70,24 @@ export default function ResultPage() {
     return () => {
       cancelled = true;
     };
-  }, [scanId]);
+  }, [scanId, attempt]);
 
   if (errorMsg) {
     return (
       <main className="mx-auto max-w-[560px] px-4 pt-10 text-center">
         <p className="text-destructive">{errorMsg}</p>
-        <div className="mt-4 flex flex-col items-center gap-2">
+        <div className="mt-5 flex flex-col items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setErrorMsg(null);
+              setProgress(null);
+              setAttempt((n) => n + 1);
+            }}
+          >
+            もう一度確認する
+          </Button>
           <Link href="/scans" className="text-sm text-primary">
             査定一覧へ
           </Link>
@@ -85,10 +100,28 @@ export default function ResultPage() {
   }
 
   if (!result) {
+    const pct = progress && progress.total > 0 ? (progress.processed / progress.total) * 100 : null;
     return (
       <main className="mx-auto flex max-w-[560px] flex-col items-center justify-center gap-4 px-4 pt-24">
-        <Loader2 className="size-10 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">AIが写真を解析中です。しばらくお待ちください…</p>
+        <Loader2 className="size-10 animate-spin text-primary" aria-hidden />
+        <div aria-live="polite" className="w-full max-w-[320px] text-center">
+          <p className="text-sm text-muted-foreground">
+            {progress
+              ? `AIが写真を解析中です（${progress.processed}/${progress.total}枚 完了）`
+              : "AIが写真を解析中です。しばらくお待ちください…"}
+          </p>
+          {pct !== null && (
+            <div className="mt-3 h-1 overflow-hidden rounded-full bg-border">
+              <div
+                className="h-full bg-primary transition-all duration-700"
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+          )}
+          <p className="mt-3 text-xs text-muted-foreground/80">
+            通常1〜2分で完了します。このまま画面を閉じても、査定一覧から後で確認できます。
+          </p>
+        </div>
       </main>
     );
   }

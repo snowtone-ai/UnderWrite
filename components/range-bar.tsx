@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { formatMan } from "@/lib/format";
-import type { MoneyRange } from "@/lib/sample/underwriting";
+import type { MoneyRange } from "@/lib/domain";
 
 /**
  * A single horizontal range bar for a P10→P90 distribution with a P50 tick.
