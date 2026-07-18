@@ -1,9 +1,33 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import { Inter, Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+// CJK fonts are large; disable preload so Next self-hosts the full JP-capable
+// font faces without a huge preload penalty (Japanese glyphs still render).
+const notoSansJp = Noto_Sans_JP({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-noto",
+  display: "swap",
+  preload: false,
+});
 
 export const metadata: Metadata = {
   title: "UnderWrite — 築古住宅アンダーライティングAI",
-  description: "開けなくても、わかる。スマホスキャンと公開データで、築古住宅の買付上限価格・再生コスト・粗利を即日算出する。",
+  description:
+    "開けなくても、わかる。スマホスキャンと公開データで、築古住宅の買付上限価格・再生コスト・粗利を即日算出する。",
+};
+
+// viewport-fit=cover so sticky bottom bars can respect the iOS home indicator.
+export const viewport: Viewport = {
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -12,7 +36,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ja">
+    <html lang="ja" className={`${inter.variable} ${notoSansJp.variable}`}>
       <body>{children}</body>
     </html>
   );
