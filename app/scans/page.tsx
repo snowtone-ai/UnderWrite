@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, LogOut, ChevronRight } from "lucide-react";
+import { Plus, LogOut, ChevronRight, Settings } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -35,6 +35,7 @@ export default function ScansPage() {
   const router = useRouter();
   const [scans, setScans] = useState<ScanRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     fetch("/api/scans")
@@ -42,6 +43,13 @@ export default function ScansPage() {
       .then((d) => setScans(d.scans ?? []))
       .catch(() => {})
       .finally(() => setLoading(false));
+
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      supabase.from("profiles").select("role").eq("id", user.id).single()
+        .then(({ data }) => setIsAdmin(data?.role === "admin"));
+    });
   }, []);
 
   async function handleLogout() {
@@ -54,14 +62,26 @@ export default function ScansPage() {
     <main className="mx-auto max-w-[560px] px-4 pb-28 pt-5">
       <header className="mb-6 flex items-center justify-between">
         <Logo />
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-1.5 text-xs text-muted-foreground"
-          aria-label="ログアウト"
-        >
-          <LogOut className="size-3.5" aria-hidden />
-          ログアウト
-        </button>
+        <div className="flex items-center gap-3">
+          {isAdmin && (
+            <Link
+              href="/admin/users"
+              className="flex items-center gap-1.5 text-xs text-muted-foreground"
+              aria-label="ユーザー管理"
+            >
+              <Settings className="size-3.5" aria-hidden />
+              管理
+            </Link>
+          )}
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-1.5 text-xs text-muted-foreground"
+            aria-label="ログアウト"
+          >
+            <LogOut className="size-3.5" aria-hidden />
+            ログアウト
+          </button>
+        </div>
       </header>
 
       <div className="mb-4 flex items-center justify-between">
