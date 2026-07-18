@@ -1,7 +1,7 @@
 # docs/state.md — UnderWrite
 
 - **Branch**: `main`（全PR マージ済、clean）
-- **Active Task**: なし — Milestone 2 完了
+- **Active Task**: なし — Milestone 3 完了
 - **Executor**: main agent (Sonnet 4.6)
 - **Write Lock**: なし
 - **Vercel**: project `under-write`（prj_pX2FfMIMvmxpN1NsjHVjNicMf3M0）、本番=main 自動デプロイ、env設定済
@@ -27,15 +27,16 @@
 | T12 | PWA manifest + service worker（Turbopack対応） | #13 |
 | T13 | マルチユーザー管理UI + bootstrap trigger + admin nav | #14 |
 | T14 | 写真解析ジョブキュー化（next/server after()） | #15 |
+| T15 | テストスイート60件 + ポーリングタイムアウト + 写真サイズ上限 | #16 |
 
 ## Milestone 達成状況
 
 - **Milestone 1**: ✅ MVP（住所+写真→判定ダッシュボード 本番URL稼働）
 - **Milestone 2**: ✅ PDF帳票 / PWA / マルチユーザー / ジョブキュー化
+- **Milestone 3**: ✅ テストスイート60件 / UX改善（タイムアウト・サイズ上限）
 
 ## 既知の残課題（次フェーズ候補）
 
-- テスト拡充: middleware・login・photos route の integration tests
 - 公開データ（不動産情報ライブラリ）実APIへの接続（現在モック graceful-degrade）
 - 実物件1件での sanity check（買付上限価格の妥当性確認）
 - iOS RoomPlan / LiDAR 3D復元アプリ（後フェーズ）
