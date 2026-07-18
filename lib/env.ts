@@ -1,5 +1,9 @@
 // Central, typed access to environment variables.
 // The single place that reads process.env for cross-cutting config.
+//
+// Server context only for non-NEXT_PUBLIC_ vars: in the browser bundle Next.js only
+// inlines NEXT_PUBLIC_* values, so requireEnv("SECRET") called from a client component
+// will throw at runtime. Read secrets in server code (route handlers, server components).
 
 export type AiProvider = "gemini" | "claude" | "openai";
 

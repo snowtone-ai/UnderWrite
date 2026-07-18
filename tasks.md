@@ -12,7 +12,7 @@
 | ID | Status | Owner | Depends On | Write Scope | Acceptance | Verification | Evidence |
 |----|--------|-------|-----------|-------------|------------|--------------|----------|
 | T00 | done | main | — | 全ルート台帳/設定 | pm-zero v11 の13ファイル構成・git・remote・guard 整備 | Phase 0.5 self-audit | このコミット |
-| T01 | review | main | T00 | app scaffold, package.json, next.config, lib/, supabase schema | Next.js16/TS/pnpm 雛形＋landing。Supabase project(erpfxhrvrzmxawojziyc)＋tables(scans,photos,findings,underwritings, RLS on)。Vercel デプロイはユーザーのimport待ち | pnpm verify ALL PASSED／migration success | verify緑, build緑, TS5/ESLint9 ピン(R-001/R-002) |
+| T01 | review | main | T00 | app scaffold, package.json, next.config, lib/, supabase schema | Next.js16/TS/pnpm 雛形＋landing。Supabase project(erpfxhrvrzmxawojziyc)＋tables＋RLS＋updated_atトリガ＋private bucket `property-photos`。Vercel import はユーザー作業（B-01） | pnpm verify ALL PASSED／migration success | verify緑, build緑, TS5/ESLint9(R-001/R-002), Tier1レビュー conditional-pass 対応済 |
 | T02 | ready | main | T01 | lib/domain/ | zod スキーマ＋TS型: `Finding`,`ScanInput`,`Underwriting`（versioned）。AI境界の背骨 | pnpm typecheck／schema unit test | — |
 | T03 | ready | main | T02 | lib/underwriting/ | 純TS決定論エンジン: 築年×工法×findings→対数正規で隠れ損傷分布, P10/P50/P90, 買付上限価格式, 粗利。lib/ai を import しない | fixture findings で unit test（決定論・境界値・負パス） | — |
 | T04 | ready | main | T02 | lib/data/ | 不動産情報ライブラリ 型付きクライアント→comps＋再販ベースライン。応答をDBキャッシュ。欠損時 graceful degrade | モックfetch でクライアント test | — |
@@ -25,10 +25,11 @@
 
 | ID | Task | Summary | Needs |
 |----|------|---------|-------|
-| — | — | — | — |
+| B-01 | T01 | 本番URL 200 が未達（Vercel への GitHub import が未実施） | ユーザーが Vercel dashboard で UnderWrite を Import → deploy。完了報告で T01 を done 化 |
 
 ## Review Notes
 
 | Task | Reviewer | Tier | Result | Notes |
 |------|----------|------|--------|-------|
 | T00 | — | — | — | scaffold; self-audit pending in this session |
+| T01 | fresh Sonnet subagent | Tier 1 (DB schema含; budget上 Opus不使用) | conditional-pass→対応済 | M-01(updated_atトリガ), M-02(bucket作成), m-08(B-01化), m-01(Next16表記), n-04(env JSDoc) を修正。残findingは T02-06 で対応 |
