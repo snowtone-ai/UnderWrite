@@ -23,11 +23,16 @@ export const metadata: Metadata = {
   title: "UnderWrite — 築古住宅アンダーライティングAI",
   description:
     "開けなくても、わかる。スマホスキャンと公開データで、築古住宅の買付上限価格・再生コスト・粗利を即日算出する。",
+  appleWebApp: { capable: true, title: "UnderWrite", statusBarStyle: "default" },
 };
 
 // viewport-fit=cover so sticky bottom bars can respect the iOS home indicator.
 export const viewport: Viewport = {
   viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f7f7f4" },
+    { media: "(prefers-color-scheme: dark)", color: "#151514" },
+  ],
 };
 
 export default function RootLayout({
