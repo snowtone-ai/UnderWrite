@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ChevronDown, Loader2, Plus } from "lucide-react";
+import { ArrowLeft, ChevronDown, Loader2, Plus, Printer } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatMan } from "@/lib/format";
 import { Money } from "@/components/money";
@@ -103,7 +103,7 @@ export default function ResultPage() {
         </div>
         <Link
           href="/scan"
-          className="-mr-2 shrink-0 rounded-md px-2 py-2 text-xs font-medium text-primary"
+          className="print-hide -mr-2 shrink-0 rounded-md px-2 py-2 text-xs font-medium text-primary"
         >
           新しい査定
         </Link>
@@ -212,7 +212,7 @@ export default function ResultPage() {
       </details>
 
       {/* Sticky action bar */}
-      <div className="fixed inset-x-0 bottom-0 border-t border-border bg-background/90 backdrop-blur">
+      <div className="print-hide fixed inset-x-0 bottom-0 border-t border-border bg-background/90 backdrop-blur">
         <div
           className="mx-auto flex max-w-[560px] items-center justify-between gap-3 px-4 py-3"
           style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
@@ -221,11 +221,21 @@ export default function ResultPage() {
             <VerdictBadge verdict={u.verdict} />
             <Money yen={u.purchaseCapYen} className="text-base font-bold" />
           </div>
-          <Button asChild className="gap-1.5">
-            <Link href="/scan">
-              <Plus className="size-4" aria-hidden /> 新しい査定
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              onClick={() => window.print()}
+            >
+              <Printer className="size-4" aria-hidden /> PDFで保存
+            </Button>
+            <Button asChild className="gap-1.5">
+              <Link href="/scan">
+                <Plus className="size-4" aria-hidden /> 新しい査定
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
     </main>
