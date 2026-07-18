@@ -1,45 +1,44 @@
 # docs/state.md — UnderWrite
 
-- **Branch**: `feat/t08-hardening`（push待ち）
-- **Active Task**: T08 Hardening — 実装完了、verify実行中
+- **Branch**: `main`（全PR マージ済、clean）
+- **Active Task**: なし — Milestone 2 完了
 - **Executor**: main agent (Sonnet 4.6)
 - **Write Lock**: なし
-- **Vercel**: project `under-write`（prj_pX2FfMIMvmxpN1NsjHVjNicMf3M0）、本番=main、env設定済
-- **Supabase**: project `erpfxhrvrzmxawojziyc`（ap-northeast-1）、scans.user_id追加済み
+- **Vercel**: project `under-write`（prj_pX2FfMIMvmxpN1NsjHVjNicMf3M0）、本番=main 自動デプロイ、env設定済
+- **Supabase**: project `erpfxhrvrzmxawojziyc`（ap-northeast-1）
 
-## 完了済み（T08 このブランチ）
+## 完了済みタスク（mainにマージ済み）
 
-| # | 内容 | ファイル |
-|---|------|---------|
-| T08-1 | エンジン純粋化: currentYear/now 注入 | lib/underwriting/engine.ts, engine.test.ts |
-| T08-2 | 実ファイルアップロード: property-photos Storage | app/api/scans/[scanId]/photos/route.ts |
-| T08-3 | 非同期写真解析: lazy parallel (status route) | app/api/scans/[scanId]/status/route.ts |
-| T08-4 | 認証ゲート: middleware + login page + logout | middleware.ts, app/login/page.tsx, app/api/auth/logout/route.ts |
-| T08-5 | Supabase SSR client (browser + server) | lib/supabase/client.ts, lib/supabase/server.ts |
-| T08-6 | scans.user_id: セッションユーザーをDBに保存 | app/api/scans/route.ts |
-| T08-7 | NEXT_PUBLIC_SUPABASE_ANON_KEY 設定 | .env.local |
+| Task | 内容 | PR |
+|------|------|----|
+| T00 | pm-zero v11 基盤整備 | scaffold commit |
+| T01 | Next.js16/TS/Supabase/Vercel 雛形 | #2 |
+| T-UI | 世界水準デザインシステム＋3画面 | #3 |
+| T02 | lib/domain Zod スキーマ | #4 |
+| T03 | lib/underwriting 決定論エンジン | #4 |
+| T04 | lib/data 不動産情報ライブラリ client | #4 |
+| T05 | lib/ai Gemini provider | #4 |
+| T06 | スキャンフロー UI + POST /api/scans | #4 |
+| T07 | 判定ダッシュボード + GET /api/scans/[scanId]/status | #4 |
+| T08 | 認証ゲート・写真Storage・エンジン純粋化 | #8 |
+| T09 | 査定履歴ページ・写真解析エンドポイント | #9/#10 |
+| T10 | 実データ結果ダッシュボード（[scanId]ページ） | #10 |
+| T11 | PDF帳票生成（print CSS） | #12 |
+| T12 | PWA manifest + service worker（Turbopack対応） | #13 |
+| T13 | マルチユーザー管理UI + bootstrap trigger + admin nav | #14 |
+| T14 | 写真解析ジョブキュー化（next/server after()） | #15 |
 
-## 完了済み（main にマージ済み）
+## Milestone 達成状況
 
-| # | 内容 |
-|---|------|
-| T02 | lib/domain Zod schemas |
-| T03 | lib/underwriting deterministic engine |
-| T04 | Gemini provider (2.5-flash) |
-| T05 | reinfolib.ts 不動産情報ライブラリ client |
-| T06 | POST /api/scans + scan-flow UI |
-| T07 | GET /api/scans/[scanId]/status + /result/[scanId] |
-| QA  | Opus 自己レビュー修正 4件 |
+- **Milestone 1**: ✅ MVP（住所+写真→判定ダッシュボード 本番URL稼働）
+- **Milestone 2**: ✅ PDF帳票 / PWA / マルチユーザー / ジョブキュー化
 
-## 残課題（次セッション以降）
+## 既知の残課題（次フェーズ候補）
 
-- **ジョブキュー化**: status route の lazy analysis は同期ブロッキング → Bull/Inngest などへ移行
-- **テスト拡充**: middleware・login・photos route の integration tests
-- **Vercel env**: NEXT_PUBLIC_SUPABASE_ANON_KEY を Vercel dashboard に追加
-
-## Next Session Pickup
-
-T08 verify グリーン → commit → push → PR to main → squash merge。
-その後 Vercel env の NEXT_PUBLIC_SUPABASE_ANON_KEY 追加を確認。
+- テスト拡充: middleware・login・photos route の integration tests
+- 公開データ（不動産情報ライブラリ）実APIへの接続（現在モック graceful-degrade）
+- 実物件1件での sanity check（買付上限価格の妥当性確認）
+- iOS RoomPlan / LiDAR 3D復元アプリ（後フェーズ）
+- 課金・サブスクリプション
 
 > tasks.md と食い違う場合は tasks.md が正。

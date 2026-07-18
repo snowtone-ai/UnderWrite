@@ -21,7 +21,12 @@
 | T06 | ready | main | T01,T05 | app/(scan)/, app/api/ | 住所＋写真アップロードpage→Storage→写真1枚ずつ処理route（DB status追跡＋ポーリング） | ローカルで1件アップ→findings生成をE2E確認 | — |
 | T07 | ready | main | T03,T04,T05,T06 | app/(result)/ | 結果ダッシュボード。T06→T05→T04→T03 を結線。実在物件1件で検証 ← **Milestone 1 ゲート** | final verify＋実物件sanity check＋Tier1レビュー | — |
 | T08 | verified | main | T07 | lib/supabase/, lib/underwriting/engine.ts, proxy.ts, app/login/, app/api/auth/, app/api/scans/[scanId]/ | 認証ゲート(proxy.ts), loginページ, logoutルート, エンジン純粋化(currentYear/now inject), 写真Storage実アップロード | verify緑＋PR#8マージ済 | PR#8 merged main |
-| T09 | doing | main | T08 | app/scans/, app/api/scans/route.ts, app/api/scans/[scanId]/photos/, app/api/scans/[scanId]/status/, proxy.ts | 査定履歴ページ(GET /api/scans), per-photo同期Gemini(タイムアウト対策), /scans認証保護 | pnpm verify ALL PASSED | — |
+| T09 | verified | main | T08 | app/scans/, app/api/scans/route.ts, app/api/scans/[scanId]/photos/, app/api/scans/[scanId]/status/, proxy.ts | 査定履歴ページ(GET /api/scans), per-photo同期Gemini(タイムアウト対策), /scans認証保護 | pnpm verify ALL PASSED | PR#9 merged main |
+| T10 | verified | main | T09 | app/api/scans/[scanId]/photos/route.ts, app/api/scans/[scanId]/status/route.ts, app/result/[scanId]/page.tsx | Gemini同期解析→statusルートでポーリング、結果ダッシュボード実データ表示 | pnpm verify ALL PASSED | PR#10 merged main |
+| T11 | verified | main | T10 | app/result/page.tsx, app/result/[scanId]/page.tsx, components/print-button.tsx | PDF帳票生成（window.print + print:hidden CSS） | pnpm verify ALL PASSED | PR#12 merged main |
+| T12 | verified | main | T11 | app/manifest.ts, app/offline/page.tsx, public/sw.js, next.config.ts | PWA manifest + サービスワーカー（Turbopack対応: serwistを使わずvanilla SW） | pnpm verify ALL PASSED | PR#13 merged main |
+| T13 | verified | main | T12 | app/admin/layout.tsx, app/admin/users/page.tsx, app/admin/users/users-table.tsx, app/api/admin/users/route.ts, app/api/admin/users/[userId]/route.ts, supabase migration(bootstrap trigger), app/scans/page.tsx | マルチユーザー管理UI: 招待・ロール変更・削除。初回サインアップ→admin自動昇格。/scansヘッダーに管理リンク | pnpm verify ALL PASSED | PR#14 merged main |
+| T14 | verified | main | T13 | app/api/scans/[scanId]/photos/route.ts, lib/ai/analyze-photo.ts | 写真解析ジョブキュー化: after()でレスポンス後にGemini呼び出し、Vercelタイムアウトリスク解消 | pnpm verify ALL PASSED | PR#15 merged main |
 
 ## Blockers
 

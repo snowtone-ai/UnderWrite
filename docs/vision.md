@@ -32,9 +32,9 @@
 
 ## Non-Goals (現時点)
 - ネイティブ iOS RoomPlan / LiDAR 3D復元アプリ（後フェーズ。MVPは素のWeb写真アップロード）。
-- PWA / オフライン対応。
-- 認証・複数ユーザー・課金（Milestone 1では単一利用者。ハードニングで追加）。
-- PDF帳票・工事指示書生成・ハザードマップ・路線価（Milestone 2以降）。
+- ~~PWA / オフライン対応。~~ → **Milestone 2 で実装済み**
+- ~~認証・複数ユーザー~~ → **Milestone 2 で実装済み**。課金は未実装。
+- ~~PDF帳票~~ → **Milestone 2 で実装済み**。工事指示書・ハザードマップ・路線価は未実装。
 - $0（Claude Pro以外）を超える有料インフラ。無料枠（Vercel / Supabase / Gemini）のみ。
 
 ## Failure Cases to Handle
