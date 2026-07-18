@@ -1,7 +1,7 @@
 # docs/state.md — UnderWrite
 
-- **Branch**: `feat/milestone3-tests-ux`（PR #16 レビュー待ち）
-- **Active Task**: なし — Milestone 3 完了、PR #16 マージ待ち
+- **Branch**: `main`（全PR マージ済、clean）
+- **Active Task**: なし — Milestone 3 完了
 - **Executor**: main agent (Sonnet 4.6)
 - **Write Lock**: なし
 - **Vercel**: project `under-write`（prj_pX2FfMIMvmxpN1NsjHVjNicMf3M0）、本番=main 自動デプロイ、env設定済
@@ -33,7 +33,7 @@
 
 - **Milestone 1**: ✅ MVP（住所+写真→判定ダッシュボード 本番URL稼働）
 - **Milestone 2**: ✅ PDF帳票 / PWA / マルチユーザー / ジョブキュー化
-- **Milestone 3**: ✅ テストスイート60件 / UX改善（タイムアウト・サイズ上限）— PR #16 マージ待ち
+- **Milestone 3**: ✅ テストスイート60件 / UX改善（タイムアウト・サイズ上限）
 
 ## 既知の残課題（次フェーズ候補）
 
