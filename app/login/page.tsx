@@ -27,7 +27,7 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/scan");
+    router.push("/scans");
     router.refresh();
   }
 

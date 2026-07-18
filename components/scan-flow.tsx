@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Camera, Check, ChevronDown, MapPin, WifiOff } from "lucide-react";
+import { Camera, Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/logo";
@@ -37,17 +37,17 @@ const currentYear = new Date().getFullYear();
 export function ScanFlow() {
   const router = useRouter();
 
-  // Property info state
   const [address, setAddress] = useState("");
   const [buildYear, setBuildYear] = useState<string>("");
   const [structure, setStructure] = useState<Structure>("木造");
   const [floorArea, setFloorArea] = useState<string>("");
-
-  // Photo state: slot id → File
   const [files, setFiles] = useState<Map<string, File>>(new Map());
-
-  // Submission state
   const [submitting, setSubmitting] = useState(false);
+  const [uploadState, setUploadState] = useState<{
+    current: string;
+    done: number;
+    total: number;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const count = files.size;
@@ -76,7 +76,6 @@ export function ScanFlow() {
     setError(null);
 
     try {
-      // 1. Create scan
       const createRes = await fetch("/api/scans", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -88,14 +87,17 @@ export function ScanFlow() {
         }),
       });
 
-      if (!createRes.ok) {
-        throw new Error("査定の作成に失敗しました");
-      }
+      if (!createRes.ok) throw new Error("査定の作成に失敗しました");
 
       const { scanId } = (await createRes.json()) as { scanId: string };
 
-      // 2. Upload photos sequentially
+      const total = files.size;
+      let done = 0;
+
       for (const [slot, file] of files) {
+        const label = SHOTS.find((s) => s.id === slot)?.label ?? slot;
+        setUploadState({ current: label, done, total });
+
         const fd = new FormData();
         fd.append("slot", slot);
         fd.append("image", file);
@@ -105,17 +107,26 @@ export function ScanFlow() {
           body: fd,
         });
 
-        if (!photoRes.ok) {
-          console.warn(`Photo upload failed for slot ${slot}`);
-        }
+        if (!photoRes.ok) console.warn(`Photo upload failed for slot ${slot}`);
+        done++;
       }
 
-      // 3. Trigger underwriting and navigate to result
       router.push(`/result/${scanId}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "エラーが発生しました");
       setSubmitting(false);
+      setUploadState(null);
     }
+  }
+
+  function submitLabel() {
+    if (uploadState) {
+      return `${uploadState.current}を解析中… (${uploadState.done + 1}/${uploadState.total})`;
+    }
+    if (submitting) return "送信中…";
+    if (!propertyValid) return "物件情報を入力してください";
+    if (count < CORE_REQUIRED) return `あと${CORE_REQUIRED - count}枚で査定できます`;
+    return `査定を依頼する（${count}枚）`;
   }
 
   return (
@@ -274,10 +285,6 @@ export function ScanFlow() {
             );
           })}
         </ul>
-
-        <p className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
-          <WifiOff className="size-3.5" aria-hidden /> 圏外でも撮影を続けられます。電波が戻り次第、自動で送信します。
-        </p>
       </section>
 
       {error && (
@@ -290,19 +297,21 @@ export function ScanFlow() {
           className="mx-auto max-w-[560px] px-4 py-3"
           style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
         >
+          {uploadState && (
+            <div className="mb-2 overflow-hidden rounded-full bg-border h-1">
+              <div
+                className="h-full bg-primary transition-all duration-500"
+                style={{ width: `${(uploadState.done / uploadState.total) * 100}%` }}
+              />
+            </div>
+          )}
           <Button
             size="lg"
             disabled={!canSubmit}
             onClick={handleSubmit}
             className="w-full justify-center"
           >
-            {submitting
-              ? "送信中…"
-              : canSubmit
-                ? `査定を依頼する（${count}枚）`
-                : !propertyValid
-                  ? "物件情報を入力してください"
-                  : `あと${CORE_REQUIRED - count}枚で査定できます`}
+            {submitLabel()}
           </Button>
         </div>
       </div>
