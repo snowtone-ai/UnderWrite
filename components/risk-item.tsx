@@ -1,6 +1,8 @@
 import { cn } from "@/lib/utils";
 import { formatMan } from "@/lib/format";
-import type { RiskWarning, Severity } from "@/lib/sample/underwriting";
+import type { RiskSummary } from "@/lib/domain";
+
+type Severity = "critical" | "warning" | "info";
 
 const DOT: Record<Severity, string> = {
   critical: "bg-nogo",
@@ -12,7 +14,7 @@ const DOT: Record<Severity, string> = {
  * One risk warning, ordered by monetary impact (not by color). Severity is a
  * small dot; the amount speaks louder than the hue. Red appears at most once per screen.
  */
-export function RiskItem({ risk }: { risk: RiskWarning }) {
+export function RiskItem({ risk }: { risk: RiskSummary }) {
   return (
     <div className="flex gap-3 border-t border-border py-4 first:border-t-0 first:pt-0">
       <span
