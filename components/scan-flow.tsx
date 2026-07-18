@@ -23,6 +23,7 @@ const SHOTS: Shot[] = [
 
 const CORE_REQUIRED = 4;
 const HIGH_PRECISION = SHOTS.length;
+const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB per photo
 
 function precision(count: number): { level: string; next: string | null } {
   if (count < CORE_REQUIRED)
@@ -63,6 +64,11 @@ export function ScanFlow() {
   const canSubmit = propertyValid && count >= CORE_REQUIRED && !submitting;
 
   const capture = (id: string, file: File) => {
+    if (file.size > MAX_FILE_BYTES) {
+      setError(`ファイルサイズが大きすぎます（上限10MB）。圧縮してから再度お試しください。`);
+      return;
+    }
+    setError(null);
     setFiles((prev) => {
       const next = new Map(prev);
       next.set(id, file);
