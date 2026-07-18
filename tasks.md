@@ -12,7 +12,8 @@
 | ID | Status | Owner | Depends On | Write Scope | Acceptance | Verification | Evidence |
 |----|--------|-------|-----------|-------------|------------|--------------|----------|
 | T00 | done | main | — | 全ルート台帳/設定 | pm-zero v11 の13ファイル構成・git・remote・guard 整備 | Phase 0.5 self-audit | このコミット |
-| T01 | review | main | T00 | app scaffold, package.json, next.config, lib/, supabase schema | Next.js16/TS/pnpm 雛形＋landing。Supabase project(erpfxhrvrzmxawojziyc)＋tables＋RLS＋updated_atトリガ＋private bucket `property-photos`。Vercel import はユーザー作業（B-01） | pnpm verify ALL PASSED／migration success | verify緑, build緑, TS5/ESLint9(R-001/R-002), Tier1レビュー conditional-pass 対応済 |
+| T01 | done | main | T00 | app scaffold, package.json, next.config, lib/, supabase schema | Next.js16/TS/pnpm 雛形＋landing。Supabase project(erpfxhrvrzmxawojziyc)＋tables＋RLS＋updated_atトリガ＋private bucket。Vercel import 済（本番URL稼働） | pnpm verify ALL PASSED／本番デプロイ済 | verify緑, Vercel稼働(ユーザー確認), Tier1レビュー対応済 |
+| T-UI | review | main | T01 | app/, components/, lib/(format,utils,sample), globals.css | 世界水準デザインシステム実装（Fable指針: 藍/帳票言語/Inter+NotoJP/Tailwind v4+shadcn）。画面: landing / scan入力フロー / 判定ダッシュボード。ユースケース(佐藤社長)をmockで再現 | pnpm verify ALL PASSED／build 4 routes | verify緑, lint0, test4 |
 | T02 | ready | main | T01 | lib/domain/ | zod スキーマ＋TS型: `Finding`,`ScanInput`,`Underwriting`（versioned）。AI境界の背骨 | pnpm typecheck／schema unit test | — |
 | T03 | ready | main | T02 | lib/underwriting/ | 純TS決定論エンジン: 築年×工法×findings→対数正規で隠れ損傷分布, P10/P50/P90, 買付上限価格式, 粗利。lib/ai を import しない | fixture findings で unit test（決定論・境界値・負パス） | — |
 | T04 | ready | main | T02 | lib/data/ | 不動産情報ライブラリ 型付きクライアント→comps＋再販ベースライン。応答をDBキャッシュ。欠損時 graceful degrade | モックfetch でクライアント test | — |
@@ -25,7 +26,7 @@
 
 | ID | Task | Summary | Needs |
 |----|------|---------|-------|
-| B-01 | T01 | 本番URL 200 が未達（Vercel への GitHub import が未実施） | ユーザーが Vercel dashboard で UnderWrite を Import → deploy。完了報告で T01 を done 化 |
+| ~~B-01~~ | T01 | 解決済: ユーザーが Vercel import＋env設定＋deploy 完了。本番URL稼働 | done |
 
 ## Review Notes
 

@@ -7,6 +7,19 @@ Permanent rationale. Newest first.
   bypassPermissions＋guard hook、Sonnet-first ルーティング、Fable 5 はアドバイザー専用。
 - **理由**: 非エンジニアが Claude Pro（$20/月・上限固定）で1体の自律エージェントを運用する前提に最適化されているため。
 
+## D-008 — フロントエンド・デザインシステム（世界水準UI/UX）
+- **決定**: Tailwind CSS v4（`@theme inline`＋OKLCH自動light/dark）＋ shadcn/ui 準拠のコンポーネント層
+  ＋ Radix（unified `radix-ui`）＋ motion（Framer後継）＋ lucide。フォントは Inter＋Noto Sans JP（next/font）。
+- **デザイン言語**: 「紙の稟議書の誠実さ」— 数字が主役、色は"判定"のみ（藍 #1E56B0 ＋ go/cond/nogo 信号色）。
+  影でなく境界線＋背景段差でエレベーション。金額は常に万円丸め（偽の精密さ禁止）。赤は画面に1箇所まで。
+- **判定ダッシュボード**: 買付上限価格を唯一のヒーロー数字に、P10/P50/P90 は1本のレンジバー、収支は帳票テーブル、
+  リスクは影響額順、根拠は初期折りたたみ。全て Server Component（scan入力のみ client）。
+- **理由**: ユーザー要件「世界で最もUI/UXが評価されるプロダクトをモデルに」「最新スタックで最高水準」。
+  Stripe（金額作法）/Linear（抑制）/Ramp（判定ファースト）/SmartHR（中高年向け日本語UI）を統合。
+- **出典**: Fable 5 デザインアドバイザー評（2026-07-18）。WebSearch で Tailwind v4×shadcn×Next16 互換確認。
+- **不変則**: AI/underwriting 呼び出しはコンポーネントに置かない。現状は `lib/sample/` の型付きmockで
+  ユースケース（佐藤社長）を再現。T02 で `lib/domain` の zod に置換し実データ結線。
+
 ## D-002 — 技術スタック: Next.js 16 (App Router) + TypeScript / Vercel / Supabase
 - **決定**: フロント＋APIを Next.js 16 App Router + TS、Vercel 無料枠にデプロイ。DB/Storage は Supabase 無料枠。
   （当初 Next.js 15 想定だったが pnpm 解決の最新メジャーが 16。App Router 前提は不変のため 16 を採用）
