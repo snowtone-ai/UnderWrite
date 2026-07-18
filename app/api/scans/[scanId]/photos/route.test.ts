@@ -8,6 +8,7 @@ vi.mock("next/server", async (importOriginal) => {
 });
 
 const mockUpload = vi.fn();
+const mockRemove = vi.fn();
 const mockGetSessionUser = vi.fn();
 
 // Per-table chains: scans (ownership lookup), photos (count + insert)
@@ -19,10 +20,14 @@ function buildScansChain(scan: { id: string; user_id: string } | null) {
   return chain;
 }
 
-function buildPhotosChain(count: number) {
+function buildPhotosChain(count: number, insertOk = true) {
   const chain: Record<string, unknown> = {};
   chain.insert = vi.fn().mockReturnValue(chain);
-  chain.single = vi.fn().mockResolvedValue({ data: { id: "photo-uuid-456" }, error: null });
+  chain.single = vi.fn().mockResolvedValue(
+    insertOk
+      ? { data: { id: "photo-uuid-456" }, error: null }
+      : { data: null, error: { message: "insert failed" } },
+  );
   chain.select = vi.fn().mockImplementation((_cols: string, opts?: { head?: boolean }) => {
     if (opts?.head) {
       const countChain = {
@@ -54,11 +59,17 @@ import { POST } from "./route";
 
 const VALID_SCAN_ID = "a1b2c3d4-e5f6-4789-abcd-ef1234567890";
 
-function setupDb(opts: { scan?: { id: string; user_id: string } | null; photoCount?: number } = {}) {
+function setupDb(
+  opts: {
+    scan?: { id: string; user_id: string } | null;
+    photoCount?: number;
+    insertOk?: boolean;
+  } = {},
+) {
   const scansChain = buildScansChain(
     opts.scan === undefined ? { id: VALID_SCAN_ID, user_id: "user-1" } : opts.scan,
   );
-  const photosChain = buildPhotosChain(opts.photoCount ?? 0);
+  const photosChain = buildPhotosChain(opts.photoCount ?? 0, opts.insertOk ?? true);
   mockFrom.mockImplementation((table: string) => (table === "scans" ? scansChain : photosChain));
 }
 
@@ -66,8 +77,9 @@ beforeEach(() => {
   vi.clearAllMocks();
   mockGetSessionUser.mockResolvedValue({ id: "user-1" });
   setupDb();
-  mockStorage.from.mockReturnValue({ upload: mockUpload });
+  mockStorage.from.mockReturnValue({ upload: mockUpload, remove: mockRemove });
   mockUpload.mockResolvedValue({ error: null });
+  mockRemove.mockResolvedValue({ error: null });
 });
 
 function makeFormData(
@@ -172,6 +184,19 @@ describe("POST /api/scans/[scanId]/photos", () => {
       params: Promise.resolve({ scanId: VALID_SCAN_ID }),
     });
     expect(res.status).toBe(500);
+  });
+
+  it("removes the uploaded blob when the photo row insert fails", async () => {
+    setupDb({ insertOk: false });
+
+    const res = await POST(makeReq(makeFormData()), {
+      params: Promise.resolve({ scanId: VALID_SCAN_ID }),
+    });
+    expect(res.status).toBe(500);
+    // The orphaned storage object must be cleaned up.
+    expect(mockRemove).toHaveBeenCalledTimes(1);
+    const removedPaths = mockRemove.mock.calls[0][0] as string[];
+    expect(removedPaths[0]).toMatch(new RegExp(`^${VALID_SCAN_ID}/front-\\d+\\.jpg$`));
   });
 
   it("returns 201 with photoId on success", async () => {

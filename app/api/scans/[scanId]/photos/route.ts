@@ -102,6 +102,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ sca
 
   if (photoErr || !photoRow) {
     console.error("photos insert error", photoErr);
+    // Remove the just-uploaded blob so a failed insert does not orphan storage.
+    await db.storage.from("property-photos").remove([storagePath]);
     return NextResponse.json({ error: "DB error saving photo" }, { status: 500 });
   }
 
