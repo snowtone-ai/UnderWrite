@@ -27,6 +27,7 @@
 | T12 | verified | main | T11 | app/manifest.ts, app/offline/page.tsx, public/sw.js, next.config.ts | PWA manifest + サービスワーカー（Turbopack対応: serwistを使わずvanilla SW） | pnpm verify ALL PASSED | PR#13 merged main |
 | T13 | verified | main | T12 | app/admin/layout.tsx, app/admin/users/page.tsx, app/admin/users/users-table.tsx, app/api/admin/users/route.ts, app/api/admin/users/[userId]/route.ts, supabase migration(bootstrap trigger), app/scans/page.tsx | マルチユーザー管理UI: 招待・ロール変更・削除。初回サインアップ→admin自動昇格。/scansヘッダーに管理リンク | pnpm verify ALL PASSED | PR#14 merged main |
 | T14 | verified | main | T13 | app/api/scans/[scanId]/photos/route.ts, lib/ai/analyze-photo.ts | 写真解析ジョブキュー化: after()でレスポンス後にGemini呼び出し、Vercelタイムアウトリスク解消 | pnpm verify ALL PASSED | PR#15 merged main |
+| T15 | review | main | T14 | vitest.setup.ts, vitest.config.ts, proxy.test.ts, app/api/scans/route.test.ts, app/api/scans/[scanId]/photos/route.test.ts, lib/ai/analyze-photo.test.ts, app/api/admin/users/route.test.ts, app/api/admin/users/[userId]/route.test.ts, app/result/[scanId]/page.tsx, components/scan-flow.tsx | テストスイート60件(11ファイル): auth middleware/scans/photos/analyze-photo/admin全API。ポーリング5分タイムアウト。写真10MBサイズ上限 | pnpm verify ALL PASSED (60 tests) | PR#16 open |
 
 ## Blockers
 
