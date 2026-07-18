@@ -27,6 +27,10 @@ export async function POST(req: NextRequest) {
   const { address, buildYear, structure, floorAreaSqm, landAreaSqm } = parsed.data;
 
   const user = await getSessionUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const db = getServiceClient();
   const { data, error } = await db
     .from("scans")
@@ -37,7 +41,7 @@ export async function POST(req: NextRequest) {
       floor_area_sqm: floorAreaSqm,
       land_area_sqm: landAreaSqm ?? null,
       status: "pending",
-      user_id: user?.id ?? null,
+      user_id: user.id,
     })
     .select("id")
     .single();

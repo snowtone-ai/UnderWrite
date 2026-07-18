@@ -97,4 +97,29 @@ describe("runEngine — boundary values", () => {
     });
     expect(r.verdict).toBe("go");
   });
+
+  it("nogo verdict when purchase cap is clamped to zero", () => {
+    // Renovation P90 exceeds resale: no purchase price clears the margin target
+    const r = runEngine({
+      input: { ...BASE_INPUT, buildYear: 1955, floorAreaSqm: 250 },
+      findings: Array.from({ length: 8 }, () =>
+        makeFinding({ id: crypto.randomUUID(), severity: "critical" }),
+      ),
+      resaleBaseline: { medianYen: 3_000_000, comps: 3, confidence: 0.2 },
+      providerModelId: "x",
+    });
+    expect(r.purchaseCapYen).toBe(0);
+    expect(r.verdict).toBe("nogo");
+  });
+
+  it("does not produce NaN margin when resale median is zero", () => {
+    const r = runEngine({
+      input: BASE_INPUT,
+      findings: [],
+      resaleBaseline: { medianYen: 0, comps: 0, confidence: 0 },
+      providerModelId: "x",
+    });
+    expect(Number.isFinite(r.expectedMarginPct)).toBe(true);
+    expect(r.verdict).toBe("nogo");
+  });
 });

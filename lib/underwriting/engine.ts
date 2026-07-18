@@ -1,6 +1,6 @@
 import type { ScanInputV1, FindingV1, UnderwritingV1, MoneyRange, RiskSummary } from "@/lib/domain";
 
-export const ENGINE_VERSION = "1.0.0" as const;
+export const ENGINE_VERSION = "1.1.0" as const;
 
 // Base renovation rate (yen/sqm) and structure multipliers
 const BASE_RATE_PER_SQM = 48_000;
@@ -114,10 +114,19 @@ export function runEngine(engineInput: EngineInput): UnderwritingV1 {
 
   // Actual expected margin with P50 renovation
   const grossProfitYen = resaleMedian - purchaseCapYen - renovationCostYen.p50 - expensesYen;
-  const expectedMarginPct = Math.round((grossProfitYen / resaleMedian) * 100);
+  const expectedMarginPct =
+    resaleMedian > 0 ? Math.round((grossProfitYen / resaleMedian) * 100) : 0;
 
+  // A cap of 0 means no purchase price clears the margin target — always nogo,
+  // even if the P50-based margin looks acceptable.
   const verdict: UnderwritingV1["verdict"] =
-    expectedMarginPct >= 20 ? "go" : expectedMarginPct >= 8 ? "conditional" : "nogo";
+    purchaseCapYen <= 0
+      ? "nogo"
+      : expectedMarginPct >= 20
+        ? "go"
+        : expectedMarginPct >= 8
+          ? "conditional"
+          : "nogo";
 
   // Confidence: based on comps + photo count
   const photoCount = findings.length;
@@ -176,5 +185,7 @@ function buildHeadline(
     return `この金額以下で買えれば、粗利${margin}%（${capMan}万円基準）を確保できる見込みです。`;
   if (verdict === "conditional")
     return `この金額以下で買えれば、粗利${margin}%を8割の確率で確保できます。`;
+  if (cap <= 0)
+    return `再生コストが想定再販価格に対して大きく、目標粗利を確保できる買付価格が存在しません。見送りを推奨します。`;
   return `現在の相場では採算が取りにくい可能性があります。買付上限は${capMan}万円です。`;
 }

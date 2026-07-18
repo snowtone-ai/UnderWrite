@@ -2,7 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 import { z } from "zod";
 import { FindingV1, SCHEMA_VERSION } from "@/lib/domain";
 import { requireEnv } from "@/lib/env";
-import type { AIProvider } from "@/lib/ai";
+import type { AIProvider, AIImage } from "@/lib/ai";
 
 const MODEL = "gemini-2.5-flash";
 
@@ -40,12 +40,12 @@ export class GeminiProvider implements AIProvider {
     this.client = new GoogleGenAI({ apiKey });
   }
 
-  async analyzeImages(imageBase64List: string[], instructions: string): Promise<FindingV1[]> {
+  async analyzeImages(images: AIImage[], instructions: string): Promise<FindingV1[]> {
     const parts: Array<{ text: string } | { inlineData: { mimeType: string; data: string } }> = [
       { text: SYSTEM_PROMPT },
       { text: instructions || "上記の写真を分析してください。" },
-      ...imageBase64List.map((b64) => ({
-        inlineData: { mimeType: "image/jpeg", data: b64 },
+      ...images.map((img) => ({
+        inlineData: { mimeType: img.mimeType, data: img.base64 },
       })),
     ];
 

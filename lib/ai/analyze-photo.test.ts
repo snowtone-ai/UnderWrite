@@ -51,6 +51,11 @@ describe("analyzePhoto", () => {
   it("sets photo status to 'done' after successful analysis", async () => {
     await analyzePhoto("photo-1", "scan-1", "front", "base64data");
 
+    expect(mockAnalyzeImages).toHaveBeenCalledWith(
+      [{ base64: "base64data", mimeType: "image/jpeg" }],
+      expect.stringContaining("front"),
+    );
+
     const updateCalls = dbChain.update.mock.calls;
     const lastStatus = updateCalls.at(-1)?.[0] as Record<string, string>;
     expect(lastStatus).toMatchObject({ status: "done" });

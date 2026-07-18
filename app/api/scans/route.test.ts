@@ -98,6 +98,24 @@ describe("POST /api/scans", () => {
     expect(res.status).toBe(400);
   });
 
+  it("returns 401 when user is not authenticated", async () => {
+    mockGetUser.mockResolvedValue(null);
+
+    const req = new NextRequest("http://localhost/api/scans", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        address: "栃木県宇都宮市戸祭町",
+        buildYear: 1985,
+        structure: "木造",
+        floorAreaSqm: 95,
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(401);
+  });
+
   it("returns 500 when DB insert fails", async () => {
     (dbChain.single as ReturnType<typeof vi.fn>).mockResolvedValue({
       data: null,

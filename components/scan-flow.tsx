@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Camera, Check, ChevronDown } from "lucide-react";
@@ -50,6 +50,9 @@ export function ScanFlow() {
     total: number;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Survives a failed submit so retries reuse the same scan and skip uploaded photos
+  const scanIdRef = useRef<string | null>(null);
+  const uploadedSlotsRef = useRef<Set<string>>(new Set());
 
   const count = files.size;
   const p = precision(count);
@@ -82,25 +85,31 @@ export function ScanFlow() {
     setError(null);
 
     try {
-      const createRes = await fetch("/api/scans", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          address: address.trim(),
-          buildYear: Number(buildYear),
-          structure,
-          floorAreaSqm: Number(floorArea),
-        }),
-      });
+      if (!scanIdRef.current) {
+        const createRes = await fetch("/api/scans", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            address: address.trim(),
+            buildYear: Number(buildYear),
+            structure,
+            floorAreaSqm: Number(floorArea),
+          }),
+        });
 
-      if (!createRes.ok) throw new Error("査定の作成に失敗しました");
+        if (!createRes.ok) throw new Error("査定の作成に失敗しました");
 
-      const { scanId } = (await createRes.json()) as { scanId: string };
+        const { scanId } = (await createRes.json()) as { scanId: string };
+        scanIdRef.current = scanId;
+      }
+      const scanId = scanIdRef.current;
 
-      const total = files.size;
+      const pending = [...files].filter(([slot]) => !uploadedSlotsRef.current.has(slot));
+      const total = pending.length;
       let done = 0;
+      const failedLabels: string[] = [];
 
-      for (const [slot, file] of files) {
+      for (const [slot, file] of pending) {
         const label = SHOTS.find((s) => s.id === slot)?.label ?? slot;
         setUploadState({ current: label, done, total });
 
@@ -108,13 +117,30 @@ export function ScanFlow() {
         fd.append("slot", slot);
         fd.append("image", file);
 
-        const photoRes = await fetch(`/api/scans/${scanId}/photos`, {
-          method: "POST",
-          body: fd,
-        });
-
-        if (!photoRes.ok) console.warn(`Photo upload failed for slot ${slot}`);
+        try {
+          const photoRes = await fetch(`/api/scans/${scanId}/photos`, {
+            method: "POST",
+            body: fd,
+          });
+          if (photoRes.ok) {
+            uploadedSlotsRef.current.add(slot);
+          } else {
+            failedLabels.push(label);
+          }
+        } catch {
+          failedLabels.push(label);
+        }
         done++;
+      }
+
+      if (failedLabels.length > 0) {
+        setError(
+          `${failedLabels.length}枚（${failedLabels.join("・")}）の送信に失敗しました。` +
+            `通信環境をご確認のうえ、もう一度ボタンを押すと失敗分だけ再送します。`,
+        );
+        setSubmitting(false);
+        setUploadState(null);
+        return;
       }
 
       router.push(`/result/${scanId}`);

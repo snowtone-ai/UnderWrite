@@ -14,14 +14,17 @@ import { Button } from "@/components/ui/button";
 import { LogoMark } from "@/components/logo";
 import type { UnderwritingV1 } from "@/lib/domain";
 
+type PhotoStats = { total: number; failed: number };
+
 type StatusResponse =
-  | { status: "done"; result: UnderwritingV1 }
+  | { status: "done"; result: UnderwritingV1; photos?: PhotoStats }
   | { status: "pending" }
   | { error: string };
 
 export default function ResultPage() {
   const { scanId } = useParams<{ scanId: string }>();
   const [result, setResult] = useState<UnderwritingV1 | null>(null);
+  const [photoStats, setPhotoStats] = useState<PhotoStats | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
@@ -47,6 +50,7 @@ export default function ResultPage() {
           }
           if (data.status === "done") {
             setResult(data.result);
+            setPhotoStats(data.photos ?? null);
             return;
           }
           // pending — retry after 2s
@@ -118,6 +122,13 @@ export default function ResultPage() {
           新しい査定
         </Link>
       </header>
+
+      {photoStats && photoStats.failed > 0 && (
+        <p className="mb-4 rounded-lg bg-cond-bg px-4 py-3 text-[13px] leading-relaxed text-cond">
+          写真{photoStats.failed}枚の解析に失敗したため、残り
+          {photoStats.total - photoStats.failed}枚に基づく判定です。判定精度が下がっている可能性があります。
+        </p>
+      )}
 
       {/* Verdict hero */}
       <section className="overflow-hidden rounded-xl border border-border bg-card">
