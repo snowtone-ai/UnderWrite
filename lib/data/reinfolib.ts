@@ -82,9 +82,9 @@ export async function fetchResaleBaseline(
     const area = parseFloat(r.Area);
     return (
       r.Type === "中古マンション等" ||
-      r.Type === "宅地(土地と建物)" &&
+      (r.Type === "宅地(土地と建物)" &&
         area >= floorAreaSqm * 0.5 &&
-        area <= floorAreaSqm * 2
+        area <= floorAreaSqm * 2)
     );
   });
 

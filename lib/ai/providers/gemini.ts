@@ -4,7 +4,7 @@ import { FindingV1, SCHEMA_VERSION } from "@/lib/domain";
 import { requireEnv } from "@/lib/env";
 import type { AIProvider } from "@/lib/ai";
 
-const MODEL = "gemini-2.0-flash";
+const MODEL = "gemini-2.5-flash";
 
 const SYSTEM_PROMPT = `あなたは築古住宅の目利き専門AIです。
 提供された住宅写真を詳細に分析し、発見した損傷・劣化・問題点を JSON 配列として出力してください。
@@ -20,7 +20,7 @@ const SYSTEM_PROMPT = `あなたは築古住宅の目利き専門AIです。
   "evidenceText": "写真から確認できた具体的な証拠（最大200文字）",
   "imageRef": "写真の参照番号（例: image_1）",
   "costEstimateLowYen": 修繕費用の下限（円、省略可）,
-  "costEstimateHigh Yen": 修繕費用の上限（円、省略可）
+  "costEstimateHighYen": 修繕費用の上限（円、省略可）
 }
 
 severity の基準:
@@ -30,10 +30,6 @@ severity の基準:
 
 問題が見当たらない場合は空の配列 [] を返してください。
 必ず有効な JSON のみを返し、説明文は不要です。`;
-
-function parseUUID(): string {
-  return crypto.randomUUID();
-}
 
 export class GeminiProvider implements AIProvider {
   readonly modelId = `gemini/${MODEL}`;
@@ -48,7 +44,7 @@ export class GeminiProvider implements AIProvider {
     const parts: Array<{ text: string } | { inlineData: { mimeType: string; data: string } }> = [
       { text: SYSTEM_PROMPT },
       { text: instructions || "上記の写真を分析してください。" },
-      ...imageBase64List.map((b64, i) => ({
+      ...imageBase64List.map((b64) => ({
         inlineData: { mimeType: "image/jpeg", data: b64 },
       })),
     ];
@@ -72,7 +68,7 @@ export class GeminiProvider implements AIProvider {
     const findings: FindingV1[] = [];
     for (const item of parsed) {
       if (typeof item !== "object" || item === null) continue;
-      const withVersion = { _v: SCHEMA_VERSION, id: parseUUID(), ...item };
+      const withVersion = { _v: SCHEMA_VERSION, id: crypto.randomUUID(), ...item };
       const result = FindingV1.safeParse(withVersion);
       if (result.success) {
         findings.push(result.data);

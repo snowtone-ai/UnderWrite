@@ -6,19 +6,26 @@ import { getAIProvider } from "@/lib/ai";
 import { FindingV1, ScanInputV1, SCHEMA_VERSION } from "@/lib/domain";
 import type { FindingV1 as FindingV1Type } from "@/lib/domain";
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ scanId: string }> }) {
   const { scanId } = await params;
+
+  if (!UUID_RE.test(scanId)) {
+    return NextResponse.json({ error: "Invalid scanId" }, { status: 400 });
+  }
+
   const db = getServiceClient();
 
   // Return cached underwriting if already computed
   const { data: existing } = await db
     .from("underwritings")
-    .select("result_json")
+    .select("result")
     .eq("scan_id", scanId)
     .maybeSingle();
 
-  if (existing?.result_json) {
-    return NextResponse.json({ status: "done", result: existing.result_json });
+  if (existing?.result) {
+    return NextResponse.json({ status: "done", result: existing.result });
   }
 
   // Load scan metadata
@@ -32,15 +39,20 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ sca
     return NextResponse.json({ error: "Scan not found" }, { status: 404 });
   }
 
+  // Return pending if photos are still being processed
+  if (scan.status === "pending") {
+    return NextResponse.json({ status: "pending" });
+  }
+
   // Load findings
   const { data: findingRows } = await db
     .from("findings")
-    .select("raw_json")
+    .select("parsed")
     .eq("scan_id", scanId);
 
   const findings: FindingV1Type[] = [];
   for (const row of findingRows ?? []) {
-    const r = FindingV1.safeParse({ _v: SCHEMA_VERSION, ...row.raw_json });
+    const r = FindingV1.safeParse({ _v: SCHEMA_VERSION, ...row.parsed });
     if (r.success) findings.push(r.data);
   }
 
@@ -71,16 +83,25 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ sca
   });
 
   // Persist underwriting result
-  await db.from("underwritings").upsert({
-    scan_id: scanId,
-    engine_version: result.engineVersion,
-    verdict: result.verdict,
-    purchase_cap_yen: result.purchaseCapYen,
-    result_json: result,
-  });
+  const { error: upsertErr } = await db.from("underwritings").upsert(
+    {
+      scan_id: scanId,
+      engine_version: result.engineVersion,
+      input_snapshot: scanInputResult.data,
+      result,
+    },
+    { onConflict: "scan_id" },
+  );
+
+  if (upsertErr) {
+    console.error("underwritings upsert error", upsertErr);
+  }
 
   // Update scan status
-  await db.from("scans").update({ status: "done" }).eq("id", scanId);
+  const { error: statusErr } = await db.from("scans").update({ status: "done" }).eq("id", scanId);
+  if (statusErr) {
+    console.error("scan status update error", statusErr);
+  }
 
   return NextResponse.json({ status: "done", result });
 }
