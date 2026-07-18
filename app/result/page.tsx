@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, ChevronDown, Share2 } from "lucide-react";
+import { ArrowLeft, ChevronDown, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatMan } from "@/lib/format";
 import { Money } from "@/components/money";
@@ -26,7 +26,7 @@ export default function ResultPage() {
       <header className="mb-4 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <Link
-            href="/"
+            href="/scans"
             className="mb-1 inline-flex items-center gap-1.5 text-xs text-muted-foreground"
           >
             <LogoMark className="size-4" />
@@ -157,8 +157,10 @@ export default function ResultPage() {
             <VerdictBadge verdict={u.verdict} />
             <Money yen={u.purchaseCapYen} className="text-base font-bold" />
           </div>
-          <Button className="gap-1.5">
-            <Share2 className="size-4" aria-hidden /> PDFで共有
+          <Button asChild className="gap-1.5">
+            <Link href="/scan">
+              <Plus className="size-4" aria-hidden /> 新しい査定
+            </Link>
           </Button>
         </div>
       </div>

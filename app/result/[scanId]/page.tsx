@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ChevronDown, Loader2, Share2 } from "lucide-react";
+import { ArrowLeft, ChevronDown, Loader2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatMan } from "@/lib/format";
 import { Money } from "@/components/money";
@@ -221,8 +221,10 @@ export default function ResultPage() {
             <VerdictBadge verdict={u.verdict} />
             <Money yen={u.purchaseCapYen} className="text-base font-bold" />
           </div>
-          <Button className="gap-1.5">
-            <Share2 className="size-4" aria-hidden /> PDFで共有
+          <Button asChild className="gap-1.5">
+            <Link href="/scan">
+              <Plus className="size-4" aria-hidden /> 新しい査定
+            </Link>
           </Button>
         </div>
       </div>
