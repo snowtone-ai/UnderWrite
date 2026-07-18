@@ -13,7 +13,7 @@
 |----|--------|-------|-----------|-------------|------------|--------------|----------|
 | T00 | done | main | — | 全ルート台帳/設定 | pm-zero v11 の13ファイル構成・git・remote・guard 整備 | Phase 0.5 self-audit | このコミット |
 | T01 | done | main | T00 | app scaffold, package.json, next.config, lib/, supabase schema | Next.js16/TS/pnpm 雛形＋landing。Supabase project(erpfxhrvrzmxawojziyc)＋tables＋RLS＋updated_atトリガ＋private bucket。Vercel import 済（本番URL稼働） | pnpm verify ALL PASSED／本番デプロイ済 | verify緑, Vercel稼働(ユーザー確認), Tier1レビュー対応済 |
-| T-UI | review | main | T01 | app/, components/, lib/(format,utils,sample), globals.css | 世界水準デザインシステム実装（Fable指針: 藍/帳票言語/Inter+NotoJP/Tailwind v4+shadcn）。画面: landing / scan入力フロー / 判定ダッシュボード。ユースケース(佐藤社長)をmockで再現 | pnpm verify ALL PASSED／build 4 routes | verify緑, lint0, test4 |
+| T-UI | done | main | T01 | app/, components/, lib/(format,utils,sample), globals.css | 世界水準デザインシステム実装（Fable指針: 藍/帳票言語/Inter+NotoJP/Tailwind v4+shadcn）。画面: landing / scan入力フロー / 判定ダッシュボード。ユースケース(佐藤社長)をmockで再現 | pnpm verify ALL PASSED／build 4 routes | verify緑, lint0, test4, Tier1レビュー指摘(B/M/m)全対応 |
 | T02 | ready | main | T01 | lib/domain/ | zod スキーマ＋TS型: `Finding`,`ScanInput`,`Underwriting`（versioned）。AI境界の背骨 | pnpm typecheck／schema unit test | — |
 | T03 | ready | main | T02 | lib/underwriting/ | 純TS決定論エンジン: 築年×工法×findings→対数正規で隠れ損傷分布, P10/P50/P90, 買付上限価格式, 粗利。lib/ai を import しない | fixture findings で unit test（決定論・境界値・負パス） | — |
 | T04 | ready | main | T02 | lib/data/ | 不動産情報ライブラリ 型付きクライアント→comps＋再販ベースライン。応答をDBキャッシュ。欠損時 graceful degrade | モックfetch でクライアント test | — |
@@ -34,3 +34,4 @@
 |------|----------|------|--------|-------|
 | T00 | — | — | — | scaffold; self-audit pending in this session |
 | T01 | fresh Sonnet subagent | Tier 1 (DB schema含; budget上 Opus不使用) | conditional-pass→対応済 | M-01(updated_atトリガ), M-02(bucket作成), m-08(B-01化), m-01(Next16表記), n-04(env JSDoc) を修正。残findingは T02-06 で対応 |
+| T-UI | fresh Sonnet subagent | Tier 1 (UI, 400+行) | FAIL→全指摘対応→自己確認でPASS | B-1(safe-area),B-2(cond contrast),M-1(年),M-2(clamp),M-3(精度文言),M-5(disclaimer contrast),m-1(tap44),m-2(aria),m-5(Noto),m-9(income符号) 修正。verify緑で再確認（Opus不使用のため full再レビューは代替） |
