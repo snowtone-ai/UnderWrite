@@ -16,6 +16,21 @@ describe("fetchResaleBaseline — no API key", () => {
   });
 });
 
+describe("fetchResaleBaseline — request parameters", () => {
+  it("sends quarter and priceClassification=01; omits landClassification", async () => {
+    let capturedUrl = "";
+    vi.stubGlobal("fetch", (url: string) => {
+      capturedUrl = url;
+      return Promise.resolve({ ok: false, status: 503 } as Response);
+    });
+    await fetchResaleBaseline("東京都渋谷区", 95, "test-key");
+    expect(capturedUrl).toContain("quarter=");
+    expect(capturedUrl).toContain("priceClassification=01");
+    expect(capturedUrl).not.toContain("landClassification");
+    vi.unstubAllGlobals();
+  });
+});
+
 describe("fetchResaleBaseline — fetch failure gracefully degrades", () => {
   it("returns fallback when fetch throws", async () => {
     vi.stubGlobal("fetch", () => Promise.reject(new Error("network error")));
