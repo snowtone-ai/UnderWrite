@@ -1,7 +1,7 @@
 # docs/state.md — UnderWrite
 
 - **Branch**: `main`（全PR マージ済、clean）
-- **Active Task**: なし — T17 完了、商業ローンチ可能状態。セッション終了可
+- **Active Task**: なし — T17 完了 + reinfolib APIパラメータ修正（PR#19）。セッション終了可
 - **Executor**: main agent (Sonnet 4.6)
 - **Write Lock**: なし
 - **Vercel**: project `under-write`（prj_pX2FfMIMvmxpN1NsjHVjNicMf3M0）、本番=main 自動デプロイ、env設定済
@@ -30,6 +30,7 @@
 | T15 | テストスイート60件 + ポーリングタイムアウト + 写真サイズ上限 | #16 |
 | T16 | 商業ハードニング（IDOR修正・サーバ側ガード・エンジン境界値・MIME伝播・失敗リトライUX）＋Opus Tier2レビュー修正 | #17 |
 | T17 | フロント最終仕上げ（解析進捗表示・クライアント画像圧縮・再試行導線・型統一）＋Sonnet Tier1レビュー修正 | #18 |
+| T18 | reinfolib XIT001 APIパラメータ修正（quarter必須追加・priceClassification修正）＋URLテスト | #19 |
 
 ## Milestone 達成状況
 
@@ -41,7 +42,7 @@
 
 ## 既知の残課題（次フェーズ候補）
 
-- 公開データ（不動産情報ライブラリ）実APIへの接続（現在モック graceful-degrade）
+- 公開データ（不動産情報ライブラリ）実APIへの接続（コード修正済 PR#19）— **Vercel に REINFOLIB_API_KEY 設定後に本番で実データ有効化**
 - 実物件1件での sanity check（買付上限価格の妥当性確認）
 - iOS RoomPlan / LiDAR 3D復元アプリ（後フェーズ）
 - 課金・サブスクリプション
