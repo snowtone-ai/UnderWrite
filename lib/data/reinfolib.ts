@@ -57,11 +57,15 @@ export async function fetchResaleBaseline(
     return fallbackBaseline(address, floorAreaSqm);
   }
 
-  const currentYear = new Date().getFullYear();
+  const now = new Date();
+  const currentQuarter = Math.ceil((now.getMonth() + 1) / 3);
+  const prevQuarter = currentQuarter === 1 ? 4 : currentQuarter - 1;
+  const prevYear = currentQuarter === 1 ? now.getFullYear() - 1 : now.getFullYear();
   const params = new URLSearchParams({
-    year: String(currentYear - 1),
+    year: String(prevYear),
+    quarter: String(prevQuarter),
     area: prefCode,
-    landClassification: "01", // residential with building
+    priceClassification: "01",
   });
 
   let data: TransactionRecord[];
